@@ -2,7 +2,7 @@ import unittest
 
 from jannik.methods.loading_and_preprocessing import load_car_data, preprocess_car_data
 from jannik.methods.merge_PV_and_car import compute_additional_columns
-from jannik.methods.scenarios_for_users import extract_user_data, scenario_1
+from jannik.methods.scenarios_for_users import extract_user_data, scenario_1, create_scenario_table
 
 
 class TestExtractUserData(unittest.TestCase):
@@ -27,3 +27,10 @@ class TestExtractUserData(unittest.TestCase):
         print(computed_coverage)
 
         self.assertAlmostEqual(supposed_coverage, computed_coverage)
+
+    def test_create_table_does_not_crash(self):
+        filepath = 'toy_data\car_is_at_home_toy_data.csv'
+        data = load_car_data(filepath)
+        preprocessed_data = preprocess_car_data(data)
+        data_with_columns = compute_additional_columns(preprocessed_data)
+        create_scenario_table(data_with_columns)

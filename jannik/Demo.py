@@ -4,6 +4,8 @@ import pandas as pd
 
 from pathlib import Path, PureWindowsPath
 
+from jannik.methods.scenarios_for_users import create_scenario_table, scenario_1
+
 filename = PureWindowsPath("C:/Users/hamperj/private/ev_homepv/jannik/tests/toy_data/car_is_at_home_data.csv")
 filepath = Path(filename)
 filepath = 'data\car_is_at_home_toy_data.csv'
@@ -18,3 +20,6 @@ pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 print(data_with_columns)
 
+
+table = create_scenario_table(data_with_columns)
+print(table)
