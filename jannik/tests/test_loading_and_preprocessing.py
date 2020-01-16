@@ -15,7 +15,7 @@ class TestLoadingAndPreprocessingCarData(unittest.TestCase):
         print(len(preprocessed_data.columns))
         self.assertTrue(len(preprocessed_data.columns) == 7)
         print(preprocessed_data['delta_soc'])
-        self.assertTrue(np.all(preprocessed_data['delta_soc'] == [70, 10, 20]))
+        self.assertTrue(np.all(preprocessed_data['delta_soc'] == [70, 30, 20]))
 
 """ Do not touch PV data in this paper
 

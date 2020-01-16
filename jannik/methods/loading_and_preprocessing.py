@@ -22,6 +22,22 @@ def load_car_data(filepath, filter=True):
     relevant_columns = ['vin', 'start', 'soc_start', 'is_home', 'end', 'soc_end']
     if filter:
         data = data[relevant_columns]
+    data = data.drop(data[data['vin'] == '0007f9c8534b7924352bed2b9842b1fc'].index) # delete that column as user has zero demand
+    data = data.drop(
+        data[data['vin'] == '003d3821dfaabc96fa1710c2128aeb62'].index)  # delete that column as user has zero demand
+    data = data.drop(
+        data[data['vin'] == '00478e28c489e344b1db9f3bdf9aac99'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '4f3417a1c272af8c8ae31eeb8ce060f4'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '8335678314417d1094b8b956bac57761'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == 'a2c77c6bfd36c79bab9d598575cbf6ab'].index)  # delete that column as house data does not exist
+
+
     return data
 
 def preprocess_car_data(data):

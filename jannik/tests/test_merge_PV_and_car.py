@@ -3,7 +3,7 @@ import numpy as np
 
 from jannik.methods.helpers import soc2remainingCharge
 from jannik.methods.loading_and_preprocessing import load_car_data, preprocess_car_data
-from jannik.methods.merge_PV_and_car import compute_additional_columns
+from jannik.methods.compute_additional_columns import compute_additional_columns
 
 
 class TestMergePVAndCar(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestMergePVAndCar(unittest.TestCase):
         data = load_car_data(self.filepath)
         preprocessed_data = preprocess_car_data(data)
         data_with_columns = compute_additional_columns(preprocessed_data)
-        supposed = [soc2remainingCharge(30), soc2remainingCharge(90), soc2remainingCharge(80)]
+        supposed = [soc2remainingCharge(30), soc2remainingCharge(70), soc2remainingCharge(80)]
         demand = data_with_columns['needed_by_car']
         print(demand)
         print(supposed)
@@ -31,7 +31,7 @@ class TestMergePVAndCar(unittest.TestCase):
         preprocessed_data = preprocess_car_data(data)
         data_with_columns = compute_additional_columns(preprocessed_data)
         demand = data_with_columns['needed_by_car']
-        generated = data_with_columns['generacted_by_PV']
+        generated = data_with_columns['generated_by_PV']
         charged = data_with_columns['charged_from_PV']
         self.assertTrue(np.all(charged <= generated))
         self.assertTrue(np.all(charged <= demand))

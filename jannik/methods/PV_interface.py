@@ -1,9 +1,23 @@
 import datetime
+import os
+import pandas as pd
 
 import pint
+
+from jannik.methods.helpers import get_user_id
+from jannik.methods.pv_swissbuildings_json import PVModel
+
 ureg = pint.UnitRegistry()
 
 import numpy as np
+
+# TODO
+pv_efficency = 0.18
+#pv_efficency = 180
+
+
+pv_cache = {}
+
 
 def get_PV_generated(start, end, house_ID):
     """
@@ -32,4 +46,34 @@ def get_PV_generated(start, end, house_ID):
     end_hour = end.dt.hour
     """
 
-    return 5
+    #print(start +" "+ end+" " + house_ID)
+    #print(end)
+
+
+    start_datetime = datetime.datetime.strptime(str(start), "%Y-%m-%d %H:%M:%S")
+    end_datetime = datetime.datetime.strptime(str(end), "%Y-%m-%d %H:%M:%S")
+
+    if house_ID not in pv_cache:
+        user_id = get_user_id(house_ID)
+        fpath = os.path.join("..", "..", "..", "..","..","Users","hamperj","private","pvmobility", "pv_mobility_out", f"{user_id}")
+
+
+        #fpath = os.path.join("..", "..", "pvmobility", "pv_mobility_out", f"{1595}")
+        #print(os.path.abspath(fpath))
+        pv = PVModel(fpath)
+        pv_cache[house_ID] = pv
+
+
+    generated_energy =  pv_cache[house_ID].get_solar_radiation(start_datetime, end_datetime) * pv_efficency #in Wh
+
+    #print(pv.get_solar_radiation(datetime.datetime(2017, 1, 17, 18, 31),
+    #                             datetime.datetime(2017, 1, 20, 12, 57)) * pv_efficency)
+    #print(generated_energy)
+
+    #a = 5/0
+
+    #print(generated_energy)
+
+    generated_KWh = generated_energy / 1000
+    return generated_KWh
+
