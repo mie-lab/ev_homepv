@@ -1,4 +1,4 @@
-from jannik.methods.loading_and_preprocessing import load_car_data, preprocess_car_data
+from jannik.methods.loading_and_preprocessing import load_car_data, preprocess_car_data, load_baseline_car_data
 from jannik.methods.compute_additional_columns import compute_additional_columns
 import pandas as pd
 import seaborn as sns
@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from pathlib import Path, PureWindowsPath
 
-from jannik.methods.scenarios_for_users import create_scenario_table, scenario_1
+from jannik.methods.scenarios_for_users import create_scenario_table
 
 import os
 import numpy as np
@@ -33,10 +33,10 @@ print(current_dir)
 
 
 filepath = "../../Car_is_at_home_table.csv"
+filepath_baseline  = "../../data_baseline.csv"
 
 
-
-
+data_baseline = load_baseline_car_data(filepath_baseline)
 data = load_car_data(filepath)
 preprocessed_data = preprocess_car_data(data)
 data_with_columns = compute_additional_columns(preprocessed_data)
@@ -48,8 +48,15 @@ print(data_with_columns)
 
 battery_capacity = 20
 
-table = create_scenario_table(data_with_columns, battery_capacity)
+table = create_scenario_table(data_baseline, data_with_columns, battery_capacity)
 print(table)
+
+
+plt.xlim(0, 1)
+sns.distplot(table['Baseline'], hist=False, rug=True)
+#print(f"mean: {np.mean(table['Scenario 1'])}")
+plt.savefig('Baseline')
+plt.show()
 
 plt.xlim(0, 1)
 sns.distplot(table['Scenario 1'], hist=False, rug=True)

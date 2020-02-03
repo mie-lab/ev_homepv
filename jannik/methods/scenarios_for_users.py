@@ -1,4 +1,6 @@
 import copy
+import datetime
+
 import pandas as pd
 import numpy as np
 
@@ -27,6 +29,61 @@ def extract_user_data(data, user):
     datacopy['vin'] = datacopy['vin'].astype(str)
     datacopy= datacopy.drop(datacopy[datacopy['vin'] != user].index)
     return datacopy
+
+def baseline(data_baseline, user):
+    user_data = extract_user_data(data_baseline, user)
+    user_data = user_data.sort_values(by=['timestamp'])
+
+    user_data = user_data.rename(columns={"timestamp": "start"})
+    user_data['end'] = [user_data['start'][user_data.index[i+1]] if i < len(user_data.index)-1 else 0 for i in range(len(user_data.index))]
+    user_data['soc_start'] = [user_data['soc'][user_data.index[i]] for i in
+                        range(len(user_data.index))]
+    user_data['soc_end'] = [user_data['soc_start'][user_data.index[i + 1]] if i < len(user_data.index) - 1 else 0 for i in
+                        range(len(user_data.index))]
+    user_data.drop(user_data.tail(1).index,inplace=True) #drop last entry as end time is not known
+
+
+    relevant_columns = ['vin', 'start', 'soc_start', 'is_home', 'end', 'soc_end', 'zustand']
+    if filter:
+        user_data = user_data[relevant_columns]
+
+
+
+#    user_data['end'] += pd.Timedelta(pd.offsets.Second(1))
+
+
+    user_data['zustand'] = user_data['zustand'].astype(str)
+    user_data = user_data.drop(user_data[user_data['zustand'] != 'laden'].index)
+    user_data['is_home'] = user_data['is_home'].astype(str)
+    user_data = user_data.drop(user_data[user_data['is_home'] != 'True'].index)
+
+
+    user_data["generated_by_PV"] = [get_PV_generated(user_data["start"][user_data.index[i]],
+                                                         user_data["end"][user_data.index[i]],
+                                                         user_data["vin"][user_data.index[i]]
+                                                         ) for i in range(len(user_data.index))]
+    needed_by_car = [soc2remainingCharge(user_data["soc_start"][user_data.index[i]]) -
+                     soc2remainingCharge(user_data["soc_end"][user_data.index[i]])
+                     for i in range(len(user_data.index))]
+    needed_by_car = np.maximum(0, needed_by_car)
+    #needed_by_car = np.maximum(0, needed_by_car)
+    user_data['needed_by_car'] = needed_by_car
+    relevant_columns = [ 'soc_start', 'soc_end', 'zustand', 'needed_by_car', 'generated_by_PV']
+
+    charged_from_pv = [np.minimum(user_data['generated_by_PV'][user_data.index[i]],
+                                  user_data['needed_by_car'][user_data.index[i]])
+                       for i in range(len(user_data.index))]
+    charged_from_pv = np.maximum(0, charged_from_pv)
+    assert (np.all(np.array(charged_from_pv) >= 0))
+    user_data['charged_from_PV'] = charged_from_pv
+
+    total_charged = sum(user_data['charged_from_PV'])
+    total_demand = sum(user_data['needed_by_car'])
+    coverage = total_charged / total_demand
+
+    assert 0 <= coverage <= 1
+    return coverage
+
 
 def scenario_1(data, user):
     """
@@ -165,7 +222,7 @@ def scenario_3(data, user, battery_capacity):
     coverage = 1 - (total_charged_from_outside / total_demand)
     return coverage
 
-def create_scenario_table(data, capacity):
+def create_scenario_table(data_baseline, data, capacity):
     """
     Creates a dataframe that contains coverage in all different scenarios
 
@@ -184,14 +241,15 @@ def create_scenario_table(data, capacity):
     """
     user_list = list(set(data["vin"]))
     #print(user_list)
+    scenario_baseline_list = [baseline(data_baseline, str(user_list[i])) for i in range(len(user_list))]
     scenario_1_list = [scenario_1(data, str(user_list[i])) for i in range(len(user_list))]
     scenario_2_list = [scenario_2(data, str(user_list[i])) for i in range(len(user_list))]
     scenario_3_list = [scenario_3(data, str(user_list[i]), capacity) for i in range(len(user_list))]
 
 
 
-    list_of_tuples = list(zip(scenario_1_list, scenario_2_list, scenario_3_list))
-    table = pd.DataFrame(list_of_tuples , index = user_list, columns = ["Scenario 1", "Scenario 2", "Scenario 3"])
+    list_of_tuples = list(zip(scenario_baseline_list, scenario_1_list, scenario_2_list, scenario_3_list))
+    table = pd.DataFrame(list_of_tuples , index = user_list, columns = ["Baseline", "Scenario 1", "Scenario 2", "Scenario 3"])
 
     print(f"table: {table}")
     print(np.array(scenario_3_list) >= np.array(scenario_1_list))
