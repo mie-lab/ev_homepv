@@ -18,6 +18,7 @@ def remainingCharge2soc(charge):
     return soc
 
 def get_user_id(house_ID):
+    #print(f"house ID:{house_ID}")
     filepath_to_table = os.path.join( "..", "..",  "..", "..", "..",  "..", "..", "..","users", "hamperj", "private", "matching_bmw_to_address.csv")
     #print(os.path.abspath(filepath_to_table))
     data = pd.read_csv(filepath_to_table, sep=';')

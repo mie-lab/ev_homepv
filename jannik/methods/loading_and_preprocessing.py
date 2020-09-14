@@ -19,7 +19,7 @@ def load_car_data(filepath, filter=True):
         loaded data
     """
     data = pd.read_csv(filepath, sep = ',')
-    relevant_columns = ['vin', 'start', 'soc_start', 'is_home', 'end', 'soc_end']
+    relevant_columns = ['vin', 'start', 'soc_start', 'is_home', 'end', 'soc_end', 'total_segment_consumption']
     if filter:
         data = data[relevant_columns]
     data = data.drop(data[data['vin'] == '0007f9c8534b7924352bed2b9842b1fc'].index) # delete that column as user has zero demand
@@ -36,7 +36,144 @@ def load_car_data(filepath, filter=True):
     data = data.drop(
         data[
             data['vin'] == 'a2c77c6bfd36c79bab9d598575cbf6ab'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == 'e4aac45c1a674b721f2e3edf2b385fca'].index)  # delete that column as house data does not exist
 
+    data = data.drop(
+        data[
+            data['vin'] == '00006bbc00f87b6d42ddf1589d2a45b6'].index)  # delete that column as vin to user ID mapping does not exist
+
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '0001496d0daa2bb38fdecfb8ec639145'].index)  # delete that column as vin to user ID mapping does not exist
+
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '0007c68aeb7ff4a95b3ba97fc0c142ed'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '003b39715b2736c263b14fbbff239b29'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '004e95457957c238d263e44db976ab64'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '006a79d82a40efeb156ed4db4675d9ce'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '00774485b3a0ec6f1d72181af7aa3bc6'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '00a0e0b03bf164ce962ff23c9e3c15e9'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '0152fcd6049c74edb2e5e1119bfa65d7'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '02ffd5d15fe21d4a0537573b8f605415'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '0573edfe65925de7d7def42143eb3f8f'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '05cf2acb2174f9962db4eb56eacf9ddd'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '06e3e1a3151e99e11c902721e25a5839'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '080857683e8e4e34316a79b07af8123d'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '0876314af13ab88e8dafd41cf88f5139'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '08e26ea55f741801141c5b77216c843f'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '08ef62af248b9208348ad293eab4f1a7'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '0a875dcb2b38748cb9537f37a9f48b10'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '0afd5f3da115745cbab130e2cb607812'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '0e6ec6ffb28979c4afb3ebe4af7274e4'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '0fa9031ab3239b5949c57bf7a9abe2a7'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '0fb416cac595d207143ee26230d7f74a'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '2552357d4d60a6b211d0ce4d46a73249'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '2bda8c8d3cde1c63e3c43bd8507de8b0'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '47274133826e35cdc6b4139f5c6dd113'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '4c5acf8392125d59685fccd583b8fa4b'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '59444c69b5f8932561fd115485b3cffc'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '6f13f5ee5129ad3c15ce573ee77152ff'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '709475ceb9f0c73b6469a88068816c1c'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '87845b273fbb71a38cd5379bce6a842f'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == '9c55223837a5be104d6b794ca64914a6'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == 'a411eecca8a77ad8e5ed4e3085c07fc7'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == 'e0d8c66f3d54112243c037b06c2bac26'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == 'eefae320ef4361f15816453887f44836'].index)  # delete that column as vin to user ID mapping does not exist
+    data = data.drop(
+        data[
+            data[
+                'vin'] == 'eefae320ef4361f15816453887f44836'].index)  # delete that column as vin to user ID mapping does not exist
 
     return data
 
@@ -59,6 +196,8 @@ def load_baseline_car_data(filepath, filter=True):
     data = data.drop(
         data[
             data['vin'] == 'a2c77c6bfd36c79bab9d598575cbf6ab'].index)  # delete that column as house data does not exist
+
+
 
 
     #print(data)
