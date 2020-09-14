@@ -4,3 +4,5 @@ data
 data/*
 *.csv
 *.zip
+old
+__pycache__
