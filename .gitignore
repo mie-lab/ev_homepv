@@ -4,10 +4,9 @@ data
 data/*
 *.csv
 *.zip
-<<<<<<< HEAD
 old
 __pycache__
-=======
+.idea
 
 jannik/pvmodel2/*
->>>>>>> 3f859321d10635f7c1d7c61c8e51269e27742e89
+

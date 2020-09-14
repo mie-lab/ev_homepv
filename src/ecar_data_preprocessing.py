@@ -358,9 +358,11 @@ def fill_trivial_gaps(DSN, ecar_table_info):
         delta_nans = nb_nans_old - nb_nans 
         
         nb_nans_old = nb_nans
-    
-    print('values filled: ', nb_nans_init - nb_nans)
-    print('values not filled: ', nb_nans)
+        
+    print('Total number of values: ', df['latitude_start'].shape[0])
+    print('Intial values missing: ', nb_nans_init)
+    print('Values filled: ', nb_nans_init - nb_nans)
+    print('Values not filled: ', nb_nans)
     
     # write to database
     df.to_sql(name='temp_table_trivial_imputation', con=engine, index=False,
@@ -598,7 +600,7 @@ def aggregate_home_nothome_segments(ecar_unique_timestamps):
 
 if __name__ == '__main__':
 
-     """This script creates an aggregation from ecar tracking data.
+    """This script creates an aggregation from ecar tracking data.
 
     The ecar data we process creates event-based entries whenever 
     the car startes or stops charging, moving or resting. This can result in several 
