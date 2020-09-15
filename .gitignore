@@ -4,5 +4,9 @@ data
 data/*
 *.csv
 *.zip
+old
+__pycache__
+.idea
 
 jannik/pvmodel2/*
+
