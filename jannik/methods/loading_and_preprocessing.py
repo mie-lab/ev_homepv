@@ -19,6 +19,7 @@ def load_car_data(filepath, filter=True):
         loaded data
     """
     data = pd.read_csv(filepath, sep = ',')
+    #print(data)
     relevant_columns = ['vin', 'start', 'soc_start', 'is_home', 'end', 'soc_end', 'total_segment_consumption']
     if filter:
         data = data[relevant_columns]
@@ -196,6 +197,35 @@ def load_baseline_car_data(filepath, filter=True):
     data = data.drop(
         data[
             data['vin'] == 'a2c77c6bfd36c79bab9d598575cbf6ab'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '00a0e0b03bf164ce962ff23c9e3c15e9'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '02ffd5d15fe21d4a0537573b8f605415'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '05cf2acb2174f9962db4eb56eacf9ddd'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '06e3e1a3151e99e11c902721e25a5839'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '080857683e8e4e34316a79b07af8123d'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '08e26ea55f741801141c5b77216c843f'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '08ef62af248b9208348ad293eab4f1a7'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '0a875dcb2b38748cb9537f37a9f48b10'].index)  # delete that column as house data does not exist
+    data = data.drop(
+        data[
+            data['vin'] == '06e3e1a3151e99e11c902721e25a5839'].index)  # delete that column as house data does not exist
+
+
 
 
 

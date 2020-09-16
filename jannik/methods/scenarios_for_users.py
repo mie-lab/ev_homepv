@@ -80,7 +80,10 @@ def baseline(data_baseline, user):
 
     total_charged = sum(user_data['charged_from_PV'])
     total_demand = sum(user_data['needed_by_car'])
-    coverage = total_charged / total_demand
+    if total_demand != 0:
+        coverage = total_charged / total_demand
+    else:
+        return None
 
     assert 0 <= coverage <= 1
     return coverage

@@ -1,6 +1,7 @@
 import pickle
 
 from jannik.methods.PV_interface import get_PV_generated
+from jannik.methods.helpers import validate_data
 from jannik.methods.loading_and_preprocessing import load_car_data, preprocess_car_data, load_baseline_car_data
 from jannik.methods.compute_additional_columns import compute_additional_columns
 import pandas as pd
@@ -42,6 +43,13 @@ filepath_baseline  = "../../data_baseline_new.csv"
 data_baseline = load_baseline_car_data(filepath_baseline)
 data = load_car_data(filepath)
 
+#data = data.head(1000)
+#data_baseline = data_baseline.head(100000)
+
+
+data_baseline = validate_data(data_baseline, 'vin')
+data = validate_data(data, 'vin')
+
 
 #filename = f"data_scenario_2"
 #with open(filename, "rb") as f:
@@ -70,30 +78,34 @@ print(data_with_columns)
 
 battery_capacity = 20
 
+
+
 table = create_scenario_table(data_baseline, data_scenario_2, data_with_columns, battery_capacity)
 print(table)
-
+print("str table:")
+print(str(table))
+table.to_csv('table_validated.csv')
 
 plt.xlim(0, 1)
 sns.distplot(table['Baseline'], hist=False, rug=True)
 #print(f"mean: {np.mean(table['Scenario 1'])}")
-plt.savefig('Baseline_new_PV_model')
+plt.savefig('Baseline_new_PV_model_validated')
 plt.show()
 
 plt.xlim(0, 1)
 sns.distplot(table['Scenario 1'], hist=False, rug=True)
 print(f"mean: {np.mean(table['Scenario 1'])}")
-plt.savefig('Scenario 1_new_PV_model')
+plt.savefig('Scenario 1_new_PV_model_validated')
 plt.show()
 
 
 plt.xlim(0, 1)
 sns.distplot(table['Scenario 2'], hist=False, rug=True)
-plt.savefig('Scenario 2_new_PV_model')
+plt.savefig('Scenario 2_new_PV_model_validated')
 plt.show()
 
 
 plt.xlim(0, 1)
 sns.distplot(table['Scenario 3'], hist=False, rug=True)
-plt.savefig('Scenario 3_new_PV_model')
+plt.savefig('Scenario 3_new_PV_model_validated')
 plt.show()
