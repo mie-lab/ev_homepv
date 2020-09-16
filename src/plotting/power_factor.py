@@ -100,15 +100,18 @@ ln_sqrt, = ax.plot(x, y,
                           round(r2_sqrt, 2))
                 )
 #
-#ln_lin, = ax.plot(x, y_lin,
-#              linestyle=':',
-#              color='b',
-#              linewidth=3,
+ln_lin, = ax.plot(x, y_lin,
+              linestyle=':',
+              color='orange',
+              linewidth=3,
 #              label="${} * \Delta_{{SoC}}$,  $R^2 = {}$".format(
 #                      round(params_lin['dsoc'], 3), round(r2_lin, 2))
-#                )
+              label='linear fit',
+              zorder=10 # draw this line on top
+                )
 
-leg = ax.legend(handles=[ln_sqrt])
+leg = ax.legend(handles=[ln_sqrt, ln_lin], loc=2)
+leg.set_zorder(20)
 frame = leg.get_frame()
 frame.set_facecolor('#ebefe8')
 # frame.set_edgecolor('#ebefe8')
