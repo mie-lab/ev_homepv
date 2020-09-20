@@ -110,7 +110,7 @@ ln_lin, = ax.plot(x, y_lin,
               zorder=10 # draw this line on top
                 )
 
-leg = ax.legend(handles=[ln_sqrt, ln_lin], loc=2)
+leg = ax.legend(handles=[ln_sqrt, ln_lin], loc=2, frameon=False)
 leg.set_zorder(20)
 frame = leg.get_frame()
 frame.set_facecolor('#ebefe8')
