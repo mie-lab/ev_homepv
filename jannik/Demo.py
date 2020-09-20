@@ -77,6 +77,7 @@ print(data_with_columns)
 
 
 battery_capacity = 20
+#battery_capacity = 13,5 #tesla power box
 
 
 
