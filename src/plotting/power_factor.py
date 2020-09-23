@@ -21,7 +21,7 @@ from db_login import DSN
 
 
 try:
-    df = pd.read_csv(os.path.join('..','data','power_factor_data.csv'))
+    df = pd.read_csv(os.path.join('..','data_PV_Solar','power_factor_data.csv'))
 
 except FileNotFoundError:
     engine = create_engine('postgresql://{user}:{password}@{host}' + 
@@ -33,9 +33,9 @@ except FileNotFoundError:
                 from bmw where zustand = 'fahrt'"""
 
     df = pd.read_sql_query(query, con=engine)
-    df.to_csv(os.path.join('..','data','power_factor_data.csv'))
+    df.to_csv(os.path.join('..','data_PV_Solar','power_factor_data.csv'))
 
-#data preparation
+#data_PV_Solar preparation
 df['dsoc'] = df['soc_customer_start'] - df['soc_customer_end']
 df['pow'] = df['consumed_electric_energy_total']
 
@@ -59,7 +59,7 @@ hb = ax.hexbin(df['dsoc'],
                edgecolors='slategray')
 
 cb = f.colorbar(hb, ax=ax)
-cb.set_label('log10(n), n = Number of data points in cell', labelpad=20)
+cb.set_label('log10(n), n = Number of data_PV_Solar points in cell', labelpad=20)
 
 ax.set_ylabel(r"Consumed power [\si{\kilo\watthour}]", labelpad=20)
 ax.set_xlabel(r'Change in state of charge ($\Delta_{{SoC}}$) [$\%$]', labelpad=20)

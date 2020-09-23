@@ -1,11 +1,10 @@
 import copy
-import datetime
 
 import pandas as pd
 import numpy as np
 
-from jannik.methods.PV_interface import get_PV_generated
-from jannik.methods.helpers import soc2remainingCharge, remainingCharge2soc
+from src.methods.PV_interface import get_PV_generated, get_max_pv_charged
+from src.methods.helpers import soc2remainingCharge
 
 
 def extract_user_data(data, user):
@@ -22,7 +21,7 @@ def extract_user_data(data, user):
     Returns
     -------
     datacopy: pandas df
-        data with rows selected
+        data_PV_Solar with rows selected
 
     """
     datacopy = copy.deepcopy(data)
@@ -30,7 +29,7 @@ def extract_user_data(data, user):
     datacopy= datacopy.drop(datacopy[datacopy['vin'] != user].index)
     return datacopy
 
-def baseline(data_baseline, user):
+def baseline(data_baseline, user, max_kw_per_hour, path_to_data_folder):
     print(f"baseline called for user {user}")
     user_data = extract_user_data(data_baseline, user)
     user_data = user_data.sort_values(by=['timestamp'])
@@ -61,8 +60,9 @@ def baseline(data_baseline, user):
 
     user_data["generated_by_PV"] = [get_PV_generated(user_data["start"][user_data.index[i]],
                                                          user_data["end"][user_data.index[i]],
-                                                         user_data["vin"][user_data.index[i]]
+                                                         user_data["vin"][user_data.index[i]], path_to_data_folder
                                                          ) for i in range(len(user_data.index))]
+
     needed_by_car = [soc2remainingCharge(user_data["soc_start"][user_data.index[i]]) -
                      soc2remainingCharge(user_data["soc_end"][user_data.index[i]])
                      for i in range(len(user_data.index))]
@@ -71,10 +71,30 @@ def baseline(data_baseline, user):
     user_data['needed_by_car'] = needed_by_car
     relevant_columns = [ 'soc_start', 'soc_end', 'zustand', 'needed_by_car', 'generated_by_PV']
 
-    charged_from_pv = [np.minimum(user_data['generated_by_PV'][user_data.index[i]],
+    charged_from_pv_raw = [np.minimum(user_data['generated_by_PV'][user_data.index[i]],
                                   user_data['needed_by_car'][user_data.index[i]])
                        for i in range(len(user_data.index))]
-    charged_from_pv = np.maximum(0, charged_from_pv)
+
+    #print(f"data 1:{type(user_data['generated_by_PV'][user_data.index[1]])}")
+    #print(f"data 2:{type(get_max_pv_charged(user_data['start'][user_data.index[1]], user_data['end'][user_data.index[1]], max_kw_per_hour))}")
+    #print(np.minimum(user_data['generated_by_PV'][user_data.index[1]],
+    #                                  user_data['needed_by_car'][user_data.index[1]],
+    #                                  get_max_pv_charged(user_data['start'][user_data.index[1]], user_data['end'][user_data.index[1]], max_kw_per_hour)))
+    #charged_from_pv_new = [np.minimum(user_data['generated_by_PV'][user_data.index[i]],
+    #                                  user_data['needed_by_car'][user_data.index[i]],
+    #                                  get_max_pv_charged(user_data['start'][user_data.index[i]], user_data['end'][user_data.index[i]], max_kw_per_hour)) for i in range(len(user_data.index))]
+
+    charged_from_pv_raw = np.maximum(0, charged_from_pv_raw)
+    charged_from_pv = [np.minimum(charged_from_pv_raw[i],
+                                  get_max_pv_charged(user_data['start'][user_data.index[i]], user_data['end'][user_data.index[i]], max_kw_per_hour))
+                       for i in range(len(user_data.index))]
+
+    #print(charged_from_pv_raw[0:10])
+    #print(charged_from_pv[0:10])
+
+
+
+
     assert (np.all(np.array(charged_from_pv) >= 0))
     user_data['charged_from_PV'] = charged_from_pv
 
@@ -107,6 +127,9 @@ def scenario_1(data, user):
     """
     print(f"scenario 1 called for user {user}")
     user_data = extract_user_data(data, user)
+    #print(user_data)
+
+
     total_charged = sum(user_data['charged_from_PV'])
     total_demand = sum(user_data['needed_by_car'])
     #print(user_data)
@@ -122,9 +145,9 @@ def scenario_1(data, user):
     assert 0<= coverage <= 1
     return coverage
 
-def scenario_2(data, user):
+def scenario_2(data, user, max_charging_power):
     """
-    Computes fraction when Energy can be charged, but does not have to be equal to real user data.
+    Computes fraction when Energy can be charged, but does not have to be equal to real user data_PV_Solar.
 
     Parameters
     ----------
@@ -155,7 +178,7 @@ def scenario_2(data, user):
     user_data['max_kWh'] = [soc2remainingCharge(0)] * len(user_data.index)
     #user_data['MwH_needed_during_next_trip'] = [0.] * len(user_data.index)
     #relevant_columns = ['start', 'kWh_start', 'is_home', 'end', 'kWh_end', 'total_segment_consumption_kWh', 'generated_by_PV']
-    relevant_columns = ['kWh_start', 'is_home', 'kWh_end', 'total_segment_consumption_kWh',
+    relevant_columns = ['kWh_start', 'start', 'end', 'is_home', 'kWh_end', 'total_segment_consumption_kWh',
                         'generated_by_PV', 'max_kWh', 'charged_from_outside']
     user_data = user_data[relevant_columns]
     print(user_data)
@@ -175,14 +198,16 @@ def scenario_2(data, user):
 
         if user_data['is_home'].iloc[i]:
             # load from PV
+            charging = np.minimum(user_data['generated_by_PV'].iloc[i], get_max_pv_charged(user_data['start'].iloc[i], user_data['end'].iloc[i], max_charging_power))
+            #print(f"difference: {chargeable - user_data['generated_by_PV'].iloc[i]}")
             user_data['kWh_end'].iloc[i] = np.minimum(user_data['max_kWh'].iloc[i],
-                                                   user_data['kWh_start'].iloc[i] + user_data['generated_by_PV'].iloc[i] + user_data['total_segment_consumption_kWh'].iloc[i])
+                                                   user_data['kWh_start'].iloc[i] + charging + user_data['total_segment_consumption_kWh'].iloc[i])
         else:
             # if not at home, just consume
             user_data['kWh_end'].iloc[i] = user_data['kWh_start'].iloc[i] + user_data['total_segment_consumption_kWh'].iloc[i]
 
-    print(user_data.head(5))
-    print(user_data.tail(5))
+    #print(user_data.head(5))
+    #print(user_data.tail(5))
 
     assert np.all(user_data['charged_from_outside'] >=0)
     assert np.all(user_data['total_segment_consumption_kWh'] <= 0)
@@ -190,11 +215,11 @@ def scenario_2(data, user):
     total_demand = - sum(user_data['total_segment_consumption_kWh'])
     coverage = 1 - (total_charged_from_outside / total_demand)
     assert 0 <= coverage <= 1
-    return coverage
+    return coverage, total_demand
 
 
 
-def scenario_3(data, user, battery_capacity):
+def scenario_3(data, user, battery_capacity, path_to_data_folder, max_charging_power):
     """
     Computes fraction of self-produced energy when there is a battery at home for use with a given maximal capacity.
 
@@ -223,14 +248,14 @@ def scenario_3(data, user, battery_capacity):
         battery_beginning = 0.
         if i > 0:
             battery_beginning = np.minimum(battery_capacity, user_data['battery_end_of_timestamp'][user_data.index[i-1]] + \
-                                get_PV_generated(user_data['end'][user_data.index[i-1]], user_data['start'][user_data.index[i]], user))
+                                get_PV_generated(user_data['end'][user_data.index[i-1]], user_data['start'][user_data.index[i]], user, path_to_data_folder))
 
         #print(np.maximum(0., user_data['needed_by_car'][user_data.index[i]] -
          #                                                 user_data['generated_by_PV'][user_data.index[i]] -
          #                                                 battery_beginning))
-
+        charging = np.minimum(user_data['generated_by_PV'][user_data.index[i]], get_max_pv_charged(user_data['start'].iloc[i], user_data['end'].iloc[i], max_charging_power))
         user_data['charged_from_outside'][user_data.index[i]] = np.maximum(0., user_data['needed_by_car'][user_data.index[i]] -
-                                                          user_data['generated_by_PV'][user_data.index[i]] -
+                                                          charging -
                                                           battery_beginning)
         user_data['battery_end_of_timestamp'][user_data.index[i]] = np. minimum(battery_capacity, battery_beginning + \
                                                    user_data['generated_by_PV'][user_data.index[i]] + \
@@ -245,7 +270,7 @@ def scenario_3(data, user, battery_capacity):
     coverage = 1 - (total_charged_from_outside / total_demand)
     return coverage
 
-def create_scenario_table(data_baseline, data_scenario_2, data, capacity):
+def create_scenario_table(data_baseline, data_scenario_2, data, capacity, power, path_to_data_folder):
     """
     Creates a dataframe that contains coverage in all different scenarios
 
@@ -264,16 +289,26 @@ def create_scenario_table(data_baseline, data_scenario_2, data, capacity):
     """
     user_list = list(set(data["vin"]))
     #print(user_list)
-    scenario_baseline_list = [baseline(data_baseline, str(user_list[i])) for i in range(len(user_list))]
+    scenario_baseline_list = [baseline(data_baseline, str(user_list[i]), power, path_to_data_folder) for i in range(len(user_list))]
     scenario_1_list = [scenario_1(data, str(user_list[i])) for i in range(len(user_list))]
-    scenario_2_list = [scenario_2(data_scenario_2, str(user_list[i])) for i in range(len(user_list))]
-    scenario_3_list = [scenario_3(data, str(user_list[i]), capacity) for i in range(len(user_list))]
+    scenario_2_outcome = [scenario_2(data_scenario_2, str(user_list[i]), power) for i in range(len(user_list))]
+    print('scenario 2 list')
+    print(scenario_2_outcome)
+    scenario_2_outcome = np.array(scenario_2_outcome)
+    scenario_2_list = scenario_2_outcome[:,0]
+    total_demand_list = scenario_2_outcome[:,1]
+    print(scenario_2_list)
+    print(total_demand_list)
+
+
+
+    scenario_3_list = [scenario_3(data, str(user_list[i]), capacity, path_to_data_folder, power) for i in range(len(user_list))]
     #scenario_baseline_list = scenario_1_list
 
 
 
-    list_of_tuples = list(zip(scenario_baseline_list, scenario_1_list, scenario_2_list, scenario_3_list))
-    table = pd.DataFrame(list_of_tuples , index = user_list, columns = ["Baseline", "Scenario 1", "Scenario 2", "Scenario 3"])
+    list_of_tuples = list(zip(scenario_baseline_list, scenario_1_list, scenario_2_list, scenario_3_list, total_demand_list))
+    table = pd.DataFrame(list_of_tuples , index = user_list, columns = ["Baseline", "Scenario 1", "Scenario 2", "Scenario 3", "Total Demand"])
 
     print(f"table: {table}")
     print(np.array(scenario_3_list) >= np.array(scenario_1_list))

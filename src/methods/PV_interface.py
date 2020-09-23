@@ -1,15 +1,13 @@
 import datetime
 import os
-import pandas as pd
+import numpy as np
 
 import pint
 
-from jannik.methods.helpers import get_user_id
-from jannik.pvmodel2.pv_swissbuildings_json import PVModel
+from src.methods.helpers import get_user_id
+from src.methods.pv_swissbuildings_json import PVModel
 
 ureg = pint.UnitRegistry()
-
-import numpy as np
 
 # TODO
 pv_efficency = 0.18
@@ -77,23 +75,23 @@ def get_PV_generated_old(start, end, house_ID):
     generated_KWh = generated_energy / 1000
     return generated_KWh
 
-def get_PV_generated(start, end, house_ID):
+def get_PV_generated(start, end, house_ID, path_to_data_folder):
     #print("get_PV_generated is called")
     #print(house_ID)
     #if house_ID != "00000dcb1a3963f3ae1d91cd9755b2d0":
     #    return 3
     if house_ID not in pv_cache:
-        user_id = get_user_id(house_ID)
+        user_id = get_user_id(house_ID, path_to_data_folder)
         #fpath = os.path.join("..", "..", "..", "..","..","Users","hamperj","private","pvmobility", "pv_mobility_out", f"{user_id}")
 
 
         #fpath = os.path.join("..", "..", "pvmobility", "pv_mobility_out", f"{1595}")
         #print(os.path.abspath(fpath))
-        pv = PVModel(str(user_id))
+        pv = PVModel(str(user_id), path_to_data_folder)
         pv_cache[house_ID] = pv
         print(pv_cache)
 
-    user_id = get_user_id(house_ID)
+    user_id = get_user_id(house_ID, path_to_data_folder)
     #print(str(user_id))
     #pv= PVModel("1761")
     #pv = PVModel(str(user_id))
@@ -107,3 +105,11 @@ def get_PV_generated(start, end, house_ID):
     #print(generated_KWh)
     return generated_KWh
 
+def get_max_pv_charged(start, end, max_charging_power):
+    start_datetime = datetime.datetime.strptime(str(start), "%Y-%m-%d %H:%M:%S")
+    end_datetime = datetime.datetime.strptime(str(end), "%Y-%m-%d %H:%M:%S")
+    max_charged = (end_datetime. timestamp() - start_datetime.timestamp()) * max_charging_power / (60*60)
+   # print(start)
+   # print(end)
+   # print(max_charged)
+    return np.float(max_charged)

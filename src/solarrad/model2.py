@@ -39,9 +39,9 @@ def remainingCharge2soc(charge):
     return soc
 
 def aggregate_mobility_data():
-    """Merge consecutive home entries in input data.
+    """Merge consecutive home entries in input data_PV_Solar.
 
-    This function reads the raw input data (Car_is_at_home_table.csv, every line corresponds to a 
+    This function reads the raw input data_PV_Solar (Car_is_at_home_table.csv, every line corresponds to a
     time span where the car was either at home or not. It is possible (even likely) that there are
     two consecutive lines that correspond to one continuous segment. 
     This function reads in the file line-by-line, stores it in a user (=car) based dictionary
@@ -51,7 +51,7 @@ def aggregate_mobility_data():
             - does the function only store home entries of users in the "users" dict? Then it would 
                 always merge all the entries
             - When merging, the function does not check for temporal gaps.
-            - It is not given, that the input data is sorted by date
+            - It is not given, that the input data_PV_Solar is sorted by date
         """
     users = defaultdict(list) #HM: What is this?
     current_user = None
@@ -63,13 +63,13 @@ def aggregate_mobility_data():
     #Every segment has the timestamp for start and end of the segment and the power that is missing
     #in the beginning of the segment.
     
-    #The segments were created by aggregating data from the bmw_matching_experiment table (This is 
+    #The segments were created by aggregating data_PV_Solar from the bmw_matching_experiment table (This is
     #the same as the bmw table but an ID was added).
     
     #! It is possible that two consecutive segments belong together as 1 continuous segment
     
     
-    with open(os.path.join("..", "data", "Car_is_at_home_table.csv"), 'r') as f:
+    with open(os.path.join("..", "data_PV_Solar", "Car_is_at_home_table.csv"), 'r') as f:
         reader = csv.DictReader(f, delimiter=',')
 
         for row in reader:
@@ -84,7 +84,7 @@ def aggregate_mobility_data():
                 #                     json.dump(users[current_user], f, indent=4)
                 current_user = user_id
             
-            #read in data in "segment"
+            #read in data_PV_Solar in "segment"
             segment = {}
             segment['start'] = row['start'] #start time
             segment['end'] = row['end']  #end time
@@ -177,8 +177,8 @@ def pv_home_coverage():
 
     seen_vins = set()
 
-    #open simulation data
-    with open(os.path.join("..", "data", "Car_is_at_home_table.csv"), 'r') as data_file:
+    #open simulation data_PV_Solar
+    with open(os.path.join("..", "data_PV_Solar", "Car_is_at_home_table.csv"), 'r') as data_file:
         all_data_df = pd.read_csv(data_file)
         all_data_df.sort_values(['vin','start'], inplace=True)
         #transform to date type
@@ -187,10 +187,10 @@ def pv_home_coverage():
         all_data_df['end'] = all_data_df['end'].astype('datetime64[ns]')
 
         # iterate over each user (via the csv with the different ids)
-        with open(os.path.join('..', 'data', 'matching.csv'), 'r') as userid_file:
+        with open(os.path.join('..', 'data_PV_Solar', 'matching.csv'), 'r') as userid_file:
             reader = csv.DictReader(userid_file, delimiter=';')
             for row in reader:
-                # %%initizalize user data
+                # %%initizalize user data_PV_Solar
 
                 bfsnr = row['GWR_gdenr']
                 bid = row['bid']
@@ -212,19 +212,19 @@ def pv_home_coverage():
 #                 if not vin_this == "004c4ba86e77149b9bfe2dfebb4057a4":
 #                     continue
 
-                # %% load (user specific) solar data 
+                # %% load (user specific) solar data_PV_Solar
                 solar_rad_path = os.path.join(
                     "..",
-                    "data",
+                    "data_PV_Solar",
                     "solarrad",
                     "{}_{}.json".format(
                         btype,
                         bid))
                 if not os.path.exists(solar_rad_path):
-                    print("no solar rad data available: {}".format(solar_rad_path))
+                    print("no solar rad data_PV_Solar available: {}".format(solar_rad_path))
                     continue
 
-                # Load solar irrad data
+                # Load solar irrad data_PV_Solar
                 with open(solar_rad_path, 'r') as ff:
                     sol_rad = json.load(ff)
 
@@ -235,7 +235,7 @@ def pv_home_coverage():
                     lambda: defaultdict(
                         lambda: 0.0 * ureg.watthour))
 
-                # Parse solar irrad data and convert to electricity
+                # Parse solar irrad data_PV_Solar and convert to electricity
                 for k in sol_rad:
                     vs = k.split("_")
                     month = int(vs[0])
@@ -260,7 +260,7 @@ def pv_home_coverage():
                     return pv_pot
 
                 # %%start simulation
-                #filter data dataframe
+                #filter data_PV_Solar dataframe
                 user_data_df = all_data_df[all_data_df['vin'] == vin_this]
 #                 print(vin_this)
 

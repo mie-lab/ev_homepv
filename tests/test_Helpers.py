@@ -1,6 +1,6 @@
 import unittest
 
-from jannik.methods.helpers import get_user_id
+from src.methods.helpers import get_user_id
 
 
 class TestHelpers(unittest.TestCase):

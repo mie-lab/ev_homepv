@@ -1,12 +1,11 @@
 import unittest
-import numpy as np
 import pandas as pd
 
-from jannik.methods.PV_interface import get_PV_generated
-from jannik.methods.helpers import soc2remainingCharge
-from jannik.methods.loading_and_preprocessing import load_car_data, preprocess_car_data
-from jannik.methods.compute_additional_columns import compute_additional_columns
-from jannik.methods.scenarios_for_users import extract_user_data, scenario_1, create_scenario_table, scenario_2, \
+from src.methods.PV_interface import get_PV_generated
+from src.methods.helpers import soc2remainingCharge
+from src.methods.loading_and_preprocessing import load_car_data, preprocess_car_data
+from src.methods.compute_additional_columns import compute_additional_columns
+from src.methods.scenarios_for_users import extract_user_data, scenario_1, create_scenario_table, scenario_2, \
     scenario_3
 
 

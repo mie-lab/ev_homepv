@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from jannik.methods.loading_and_preprocessing import load_car_data, preprocess_car_data
+from src.methods.loading_and_preprocessing import load_car_data, preprocess_car_data
 
 class TestLoadingAndPreprocessingCarData(unittest.TestCase):
     def setUp(self):
@@ -10,14 +10,14 @@ class TestLoadingAndPreprocessingCarData(unittest.TestCase):
 
     def test_load_data_and_preprocess_car_data(self):
         data = load_car_data(self.filepath)
-        print(f"data: {data}")
+        print(f"data_PV_Solar: {data}")
         preprocessed_data = preprocess_car_data(data)
         print(len(preprocessed_data.columns))
         self.assertTrue(len(preprocessed_data.columns) == 7)
         print(preprocessed_data['delta_soc'])
         self.assertTrue(np.all(preprocessed_data['delta_soc'] == [70, 30, 20]))
 
-""" Do not touch PV data in this paper
+""" Do not touch PV data_PV_Solar in this paper
 
     def test_load_PV_data(self):
         PV_data = load_PV_data(self.directory_path)

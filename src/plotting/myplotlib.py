@@ -272,7 +272,7 @@ def example_geopandas():
     cmap = matplotlib.cm.get_cmap('rocket')
 
     fpath = os.path.join(
-        'data',
+        'data_PV_Solar',
         'coutwildrnp.shp')
 
     df = gpd.read_file(fpath)
