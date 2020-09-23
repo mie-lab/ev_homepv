@@ -27,6 +27,7 @@ import pyproj
 from db_login import DSN
 from table_information import home_table_info, ecar_table_info, ecarid_athome_table_info
 from psycopg2 import sql
+import logging
 
 
 # create new table
@@ -613,6 +614,7 @@ if __name__ == '__main__':
 
     """
     # define projections
+    logging.basicConfig(level=logging.DEBUG)
     p_source = pyproj.Proj(init='epsg:21781')
     p_dest = pyproj.Proj(init='epsg:4326')
 
@@ -631,25 +633,36 @@ if __name__ == '__main__':
 
     # start data preparation
     # create tables with home locations and raw data
+    logging.info("create_ecar_homes_table")
     create_ecar_homes_table(home_table_info=home_table_info, DSN=DSN, df=df)
+    logging.info("create_ecar_data_table")
     create_ecar_data_table(ecar_table_info=ecar_table_info, DSN=DSN)
 
     # fill gaps in ecar data table
+    logging.info("fill_trivial_gaps")
     fill_trivial_gaps(DSN=DSN, ecar_table_info=ecar_table_info)
 
     # create table  data that combines information 
+    logging.info("create_ecarid_is_athome_table")
     create_ecarid_is_athome_table(ecarid_athome_table_info=ecarid_athome_table_info, DSN=DSN)
+    logging.info("fill_ecarid_is_athome_table-start")
     fill_ecarid_is_athome_table(ecarid_athome_table_info=ecarid_athome_table_info,
         ecar_table_info=ecar_table_info, home_table_info=home_table_info, DSN=DSN,
         start_end_flag='start')
+    logging.info("fill_ecarid_is_athome_table-end")
     fill_ecarid_is_athome_table(ecarid_athome_table_info=ecarid_athome_table_info,
         ecar_table_info=ecar_table_info, home_table_info=home_table_info,
         DSN=DSN, start_end_flag='end')
     
 
+    logging.info("create_segmented_ecar_data")
     ecar_unique_timestamps, ecardata_raw = create_segmented_ecar_data(
             ecarid_athome_table_info=ecarid_athome_table_info, DSN=DSN)  
+    logging.info("set_is_home_flag")
     ecar_unique_timestamps = set_is_home_flag(ecar_unique_timestamps, ecardata_raw)
+    logging.info("aggregate_home_nothome_segments")
     ecar_unique_agg = aggregate_home_nothome_segments(ecar_unique_timestamps)
-    
+
+    logging.info("to_csv")
     ecar_unique_agg.to_csv(file_out, index=False)
+    logging.info("done")
