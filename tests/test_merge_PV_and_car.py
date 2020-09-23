@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
 
-from jannik.methods.helpers import soc2remainingCharge
-from jannik.methods.loading_and_preprocessing import load_car_data, preprocess_car_data
-from jannik.methods.compute_additional_columns import compute_additional_columns
+from src.methods.helpers import soc2remainingCharge
+from src.methods.loading_and_preprocessing import load_car_data, preprocess_car_data
+from src.methods.compute_additional_columns import compute_additional_columns
 
 
 class TestMergePVAndCar(unittest.TestCase):

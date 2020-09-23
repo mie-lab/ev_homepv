@@ -22,7 +22,7 @@ if __name__ == '__main__':
                         columnes=Columnes.ONE,
                         journal=journal)
 
-    df = pd.read_csv(os.path.join("..", "data", "results_v1_nodouble.csv"))
+    df = pd.read_csv(os.path.join("..", "data_PV_Solar", "results_v1_nodouble.csv"))
     df = df.drop(df[(df['pv_cover_home_ratio'] <= 0)].index)
 
     sns.distplot(df['pv_cover_home_ratio'],

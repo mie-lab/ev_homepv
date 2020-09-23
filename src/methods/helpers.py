@@ -19,14 +19,14 @@ def remainingCharge2soc(charge):
     assert soc >= 0 and soc <= 100.0
     return soc
 
-def get_user_id(vid):
+def get_user_id(vid, path_to_data_folder):
     #print(f"vid ID:{vid}")
-    filepath_to_table = os.path.join( "..", "..",  "..", "..", "..",  "..", "..", "..","users", "hamperj", "private", "matching_bmw_to_address.csv")
+    filepath_to_table = os.path.join( path_to_data_folder, "matching_bmw_to_address.csv")
     #print(os.path.abspath(filepath_to_table))
     data = pd.read_csv(filepath_to_table, sep=';')
     relevant_columns = ['BMW_vid', 'BMW_userid']
     data = data[relevant_columns]
-    #print(data)
+    #print(data_PV_Solar)
     user_id = data['BMW_userid'].loc[data['BMW_vid'] == vid]
     #print(house_ID)
     #print(type(user_id))
@@ -44,11 +44,11 @@ def get_user_id(vid):
     return str(int(user_id.iloc[0]))
 
 
-def validate_data(data, attr):
+def validate_data(data, attr, path_to_data_folder):
     print("validate is called!")
-    filepath_matching = os.path.join("..", "..", "..", "..", "..", "..", "..", "..", "users", "hamperj", "private",
+    filepath_matching = os.path.join(path_to_data_folder,
                             "matching_bmw_to_address.csv")
-    filepath = os.path.join("..", "..", "..", "..", "..", "..", "..", "..", "users", "hamperj", "private",
+    filepath = os.path.join(path_to_data_folder,
                  "Validation.csv")
     validation = pd.read_csv(filepath, sep=';')
     matching = pd.read_csv(filepath_matching, sep=';')
@@ -70,7 +70,7 @@ def validate_data(data, attr):
         #print(count)
         #print(current_vin)
         #current_vin = "004c4ba86e77149b9bfe2dfebb4057a4"
-        house = get_user_id(current_vin)
+        house = get_user_id(current_vin, path_to_data_folder)
         #print(house)
         #print(validation)
         if (not current_vin in list):# or house is None:

@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
         ff.write(";".join(list(map(str, headers))) + "\n")
 
-        with open(os.path.join("..", "data", "ids_address.csv"), encoding="iso-8859-15") as f:
+        with open(os.path.join("..", "data_PV_Solar", "ids_address.csv"), encoding="iso-8859-15") as f:
             reader = csv.DictReader(f, delimiter=';')
             for row in reader:
                 if len(row['Kontrollschild-Nr']) > 0:
@@ -126,7 +126,7 @@ if __name__ == '__main__':
                             d['bid'] = r['bid']
                             d['btype'] = r['btype']
 
-                        # get solar data
+                        # get solar data_PV_Solar
                         if d['bid'] is not None and d['btype'] is not None:
                             geom = None
 
@@ -147,7 +147,7 @@ if __name__ == '__main__':
                             src.close()
 
                             # Get solar irrad
-                            bpath = os.path.join("data", "solar",
+                            bpath = os.path.join("data_PV_Solar", "solar",
                                                  "rad_{}_{}.tif".format(d['btype'], d['bid']))
 
                             if os.path.exists(bpath):

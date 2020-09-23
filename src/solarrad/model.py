@@ -33,7 +33,7 @@ def aggregate_mobility_data():
     users = defaultdict(list)
 
     current_user = None
-    with open(os.path.join("..", "data", "Car_is_at_home_table.csv"), 'r') as f:
+    with open(os.path.join("..", "data_PV_Solar", "Car_is_at_home_table.csv"), 'r') as f:
         reader = csv.DictReader(f, delimiter=',')
 
         for row in reader:
@@ -98,7 +98,7 @@ def pv_home_coverage():
         traces = json.load(f)
 
     # iterate over each user    
-    with open(os.path.join('..', 'data', 'matching.csv'), 'r') as f:
+    with open(os.path.join('..', 'data_PV_Solar', 'matching.csv'), 'r') as f:
         reader = csv.DictReader(f, delimiter=';')
         for row in reader:
             bfsnr = row['GWR_gdenr']
@@ -115,22 +115,22 @@ def pv_home_coverage():
             print(btype, bid)
 
 #             if vid not in traces:
-#                 print("VID not in traces data: {}".format(vid))
+#                 print("VID not in traces data_PV_Solar: {}".format(vid))
 #                 continue
 
-            solar_rad_path = os.path.join("..", "data", "solarrad", "{}_{}.json".format(btype, bid))
+            solar_rad_path = os.path.join("..", "data_PV_Solar", "solarrad", "{}_{}.json".format(btype, bid))
             if not os.path.exists(solar_rad_path):
-                print("no solar rad data available: {}".format(solar_rad_path))
+                print("no solar rad data_PV_Solar available: {}".format(solar_rad_path))
                 continue
 
-            # Load solar irrad data
+            # Load solar irrad data_PV_Solar
             with open(solar_rad_path, 'r') as ff:
                 sol_rad = json.load(ff)
 
             tot_el = 0.0 * ureg.watthour
             el_solar = defaultdict(lambda: defaultdict(lambda: 0.0 * ureg.watthour))
 
-            # Parse solar irrad data and convert to electricity
+            # Parse solar irrad data_PV_Solar and convert to electricity
             for k in sol_rad:
                 vs = k.split("_")
                 month = int(vs[0])
@@ -144,7 +144,7 @@ def pv_home_coverage():
 
             # Parse traces
 #             segments = []
-#             with open(os.path.join("..", "data", "Car_is_at_home_table.csv"), 'r') as ff:
+#             with open(os.path.join("..", "data_PV_Solar", "Car_is_at_home_table.csv"), 'r') as ff:
 #                 reader = csv.DictReader(ff, delimiter=',')
 # 
 #                 for row in reader:
@@ -183,7 +183,7 @@ def pv_home_coverage():
 
             virtual_power_demand = None
 
-            with open(os.path.join("..", "data", "Car_is_at_home_table.csv"), 'r') as ff:
+            with open(os.path.join("..", "data_PV_Solar", "Car_is_at_home_table.csv"), 'r') as ff:
                 reader = csv.DictReader(ff, delimiter=',')
                 for row in reader:
 

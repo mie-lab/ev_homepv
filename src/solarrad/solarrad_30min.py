@@ -36,8 +36,8 @@ logging.basicConfig(filename='rad30min.log',
 proj_84 = pyproj.Proj("+init=EPSG:4326")
 
 base_path = "."
-cmsaf_path = "/data/cmsaf"
-outpath = "/data/solarrad30min"
+cmsaf_path = "/data_PV_Solar/cmsaf"
+outpath = "/data_PV_Solar/solarrad30min"
 
 NODATA = -9999.0
 
@@ -59,7 +59,7 @@ def process_building(geom, crs, proj, btype, bid):
 
     lon, lat = pyproj.transform(proj, proj_84, ct.x, ct.y)
 
-    # open building data files
+    # open building data_PV_Solar files
     try:
 
         hor5kpath = os.path.join(base_path, r"5khorizons")
@@ -157,7 +157,7 @@ def process_building(geom, crs, proj, btype, bid):
                            dtype='float32') as dst:
 
 
-            # Iterate over all radiation data, each file contains the 30 minutes values of one day
+            # Iterate over all radiation data_PV_Solar, each file contains the 30 minutes values of one day
             d = datetime.date(2017, 1, 1)
             b = 0
             while d.year < 2018:
@@ -274,7 +274,7 @@ if __name__ == '__main__':
 
     jobs = []
     print("create jobs")
-    with open(os.path.join("..", "data", 'matching.csv')) as f:
+    with open(os.path.join("..", "data_PV_Solar", 'matching.csv')) as f:
         reader = csv.DictReader(f, delimiter=';')
 
         for row in reader:

@@ -50,7 +50,7 @@ def process(vector_path, height, width, transform, NODATA=None):
 
             idx.insert(pid, poly.bounds, obj=(poly, (a, b, c, d)))
 
-    # Read vector data only for selected rectangle
+    # Read vector data_PV_Solar only for selected rectangle
     xmin, ymin = (0, 0) * transform
     xmax, ymax = (width, height) * transform
 

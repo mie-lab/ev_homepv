@@ -91,9 +91,9 @@ def create_ecar_homes_table(home_table_info, DSN, df):
         conn.commit()
 
 def create_ecar_data_table(ecar_table_info, DSN):
-    """Creates table with ecar tracking data
+    """Creates table with ecar tracking data_PV_Solar
 
-    It is important that the data has an unique row id.  
+    It is important that the data_PV_Solar has an unique row id.
     
     Args:
         ecar_table_info (dict): Dictionary with the following structure: 
@@ -198,7 +198,7 @@ def fill_ecarid_is_athome_table(ecarid_athome_table_info, ecar_table_info,
     with psycopg2.connect(**DSN) as conn:
         cur = conn.cursor()
 
-        # fill bmwid_ishome with base data (=original BMW data + tripleg and user ids)
+        # fill bmwid_ishome with base data_PV_Solar (=original BMW data_PV_Solar + tripleg and user ids)
         query = sql.SQL("""INSERT INTO {ecarid_athome_table_name} 
                     (vin, bmw_id, start_end, zustand, timestamp, soc)
                     select vin, id, '{start_end_string}', zustand, {ts_field}, {soc_field}
@@ -230,7 +230,7 @@ def fill_ecarid_is_athome_table(ecarid_athome_table_info, ecar_table_info,
 
 
 def impute_iteration(df):   
-    """Fills missing data from adjacent rows
+    """Fills missing data_PV_Solar from adjacent rows
 
     imputes all locations using the following rules:
         `start location` = `end location` if car did not move.
@@ -311,7 +311,7 @@ def impute_iteration(df):
 def fill_trivial_gaps(DSN, ecar_table_info):
     """This function treats missing geometries that are easy to fill.
 
-    The ecar records have among other data the starting location and the end location
+    The ecar records have among other data_PV_Solar the starting location and the end location
     of a segment, the activity of the segment, as well as the readings from the
     milage counter. 
     The geometries are often missing, however if we know the location of a car
@@ -335,7 +335,7 @@ def fill_trivial_gaps(DSN, ecar_table_info):
                             'ecar_table_name': name_for_table (str)}
     """
 
-    # download ecar data
+    # download ecar data_PV_Solar
     engine = create_engine('postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(**DSN))
     
     pandas_query = """SELECT id, vin, zustand, timestamp_start_utc, timestamp_end_utc, 
@@ -390,9 +390,9 @@ def fill_trivial_gaps(DSN, ecar_table_info):
 def create_dataframe_with_unique_carid_timestamps_combination(ecarid_athome_table_info, DSN):
     """Create dataframe with unique vehcile id and timestamp combinations
 
-    In the ecar tracking data several events can have the same time stamp. A common example
+    In the ecar tracking data_PV_Solar several events can have the same time stamp. A common example
     is the end of a chargeing segment and the start of an idle segment. This function
-    downloads the ecar tracking data from the database and returns a data frame where every
+    downloads the ecar tracking data_PV_Solar from the database and returns a data_PV_Solar frame where every
     timestamp is unique (for every indiviual vehicle)
     
     Args:
@@ -409,7 +409,7 @@ def create_dataframe_with_unique_carid_timestamps_combination(ecarid_athome_tabl
     # sql engine for pandas db connection
     engine = create_engine('postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(**DSN))
 
-    # download all data from
+    # download all data_PV_Solar from
     pandas_query = """SELECT * from {schema_single}.{ecarid_athome_table_name_single}""".format(**ecarid_athome_table_info)
     
     # set vehicle id as index and sort by index
@@ -436,9 +436,9 @@ def create_dataframe_with_unique_carid_timestamps_combination(ecarid_athome_tabl
 
 
 def create_segmented_ecar_data(ecarid_athome_table_info, DSN):
-    """Returns ecar tracking data as segments
+    """Returns ecar tracking data_PV_Solar as segments
 
-    The ecar tracking data can have multiple events with the same timestamp.
+    The ecar tracking data_PV_Solar can have multiple events with the same timestamp.
     This function aggregates them to have distinct segments for each car. 
     e.g.:
         #[start_1; end_1]
@@ -498,8 +498,8 @@ def set_is_home_flag(ecar_unique_timestamps, ecardata_raw):
     """Add a flag to every ecar segment that tells if the car was at home.
     
     Args:
-        ecar_unique_timestamps (TYPE): Segmented ecar data from `create_segmented_ecar_data`
-        ecardata_raw (TYPE): Raw (and complete) ecar tracking data
+        ecar_unique_timestamps (TYPE): Segmented ecar data_PV_Solar from `create_segmented_ecar_data`
+        ecardata_raw (TYPE): Raw (and complete) ecar tracking data_PV_Solar
     
     Returns:
         TYPE: pandas dataframe
@@ -600,14 +600,14 @@ def aggregate_home_nothome_segments(ecar_unique_timestamps):
 
 if __name__ == '__main__':
 
-    """This script creates an aggregation from ecar tracking data.
+    """This script creates an aggregation from ecar tracking data_PV_Solar.
 
-    The ecar data we process creates event-based entries whenever 
+    The ecar data_PV_Solar we process creates event-based entries whenever 
     the car startes or stops charging, moving or resting. This can result in several 
     event-entries per second. For our analysis, we are interested in aggregated segments
     the summarizes all activities when a user is 'at home' or 'not at home'.
 
-    This script performs the necessary steps to create such an aggregated view of the data.
+    This script performs the necessary steps to create such an aggregated view of the data_PV_Solar.
 
     The script uses a mix of pandas/geopandas and postgresql/postgis to perform thsi analysis.
 
@@ -616,10 +616,10 @@ if __name__ == '__main__':
     p_source = pyproj.Proj(init='epsg:21781')
     p_dest = pyproj.Proj(init='epsg:4326')
 
-    file_out = os.path.join("..", "data", "Car_is_at_home_table_UTC.csv")
+    file_out = os.path.join("..", "data_PV_Solar", "Car_is_at_home_table_UTC.csv")
 
-    # a file that matches the ecar data to home adresses (via an id)
-    df = pd.read_csv(os.path.join('..', 'data', 'matching_bmw_to_address.csv'), sep=";")
+    # a file that matches the ecar data_PV_Solar to home adresses (via an id)
+    df = pd.read_csv(os.path.join('..', 'data_PV_Solar', 'matching_bmw_to_address.csv'), sep=";")
 
     # transform to wgs84
     long,lat = pyproj.transform(p_source, p_dest, df['GWR_x'].values, df['GWR_y'].values)
@@ -629,15 +629,15 @@ if __name__ == '__main__':
     rename_columns = {'BMW_vid': 'vin', 'BMW_userid': 'user_id'}
     df.rename(columns=rename_columns, inplace=True)
 
-    # start data preparation
-    # create tables with home locations and raw data
+    # start data_PV_Solar preparation
+    # create tables with home locations and raw data_PV_Solar
     create_ecar_homes_table(home_table_info=home_table_info, DSN=DSN, df=df)
     create_ecar_data_table(ecar_table_info=ecar_table_info, DSN=DSN)
 
-    # fill gaps in ecar data table
+    # fill gaps in ecar data_PV_Solar table
     fill_trivial_gaps(DSN=DSN, ecar_table_info=ecar_table_info)
 
-    # create table  data that combines information 
+    # create table  data_PV_Solar that combines information
     create_ecarid_is_athome_table(ecarid_athome_table_info=ecarid_athome_table_info, DSN=DSN)
     fill_ecarid_is_athome_table(ecarid_athome_table_info=ecarid_athome_table_info,
         ecar_table_info=ecar_table_info, home_table_info=home_table_info, DSN=DSN,

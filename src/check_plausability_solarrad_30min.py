@@ -24,10 +24,10 @@ cell_width_m = 0.5
 helf_cell_width_m = cell_width_m * 0.5
 cell_area = cell_width_m * cell_width_m
 
-cmsaf_path = "/data/cmsaf"
+cmsaf_path = "/data_PV_Solar/cmsaf"
 
 if __name__ == '__main__':
-    with open(os.path.join("..", "data", 'matching.csv')) as f:
+    with open(os.path.join("..", "data_PV_Solar", 'matching.csv')) as f:
         reader = csv.DictReader(f, delimiter=';')
 
         for row in reader:
@@ -99,9 +99,9 @@ if __name__ == '__main__':
                 d += datetime.timedelta(days=1)
 
 
-            # read solar data
-            with rasterio.open(os.path.join("/data","solarrad30min","rad30min_{}_{}.tif".format(btype, bid))) as rst:
-                print("read data")
+            # read solar data_PV_Solar
+            with rasterio.open(os.path.join("/data_PV_Solar","solarrad30min","rad30min_{}_{}.tif".format(btype, bid))) as rst:
+                print("read data_PV_Solar")
                 data = rst.read()
  
                 print("aggregate")
@@ -130,7 +130,7 @@ if __name__ == '__main__':
 #                     d += datetime.timedelta(minutes=30)
 #                     i += 1
 
-                print("extract data")
+                print("extract data_PV_Solar")
                 for x in np.arange(minx + helf_cell_width_m, maxx, cell_width_m):
                     for y in np.arange(miny + helf_cell_width_m, maxy, cell_width_m):
                         poly = Polygon([(x - helf_cell_width_m, y - helf_cell_width_m),
