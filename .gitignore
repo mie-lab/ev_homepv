@@ -1,12 +1,14 @@
 db_login.py
 
-data
-data/*
+data2 - Copy/*
 *.csv
 *.zip
+*.log
+*.xlsx
 old
 __pycache__
 .idea
-
 jannik/pvmodel2/*
 
+
+data/data_PV_Solar/*.json
