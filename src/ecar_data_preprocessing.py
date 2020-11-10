@@ -22,13 +22,19 @@ import pandas as pd
 from sqlalchemy import create_engine
 import psycopg2
 import pyproj
+from pyproj import Transformer
 
 # import database login information
-from db_login import DSN
-from table_information import home_table_info, ecar_table_info, ecarid_athome_table_info
+from src.db_login import DSN
+from src.table_information import home_table_info, ecar_table_info, ecarid_athome_table_info
 from psycopg2 import sql
 import logging
-
+import datetime
+logging.basicConfig(
+                    filename='value_fillin.log',
+                    format='%(asctime)s %(levelname)-8s %(message)s',
+                    level=logging.DEBUG,
+                    datefmt='%Y-%m-%d %H:%M:%S')
 
 # create new table
 def create_ecar_homes_table(home_table_info, DSN, df):
@@ -75,8 +81,8 @@ def create_ecar_homes_table(home_table_info, DSN, df):
        
         # push dataframe to psql
         engine = create_engine('postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(**DSN))
-        df.loc[:,['vin','user_id','long','lat']].to_sql(home_table_name,
-                engine, schema=schema, index=False, if_exists='append')
+        df.loc[:, ['vin', 'user_id', 'long', 'lat']].to_sql(home_table_name,
+                                                        engine, schema=schema, index=False, if_exists='append')
 
         # set geometry and create different indices
         # set geometry
@@ -155,7 +161,7 @@ def fill_ecarid_is_athome_table(ecarid_athome_table_info, ecar_table_info,
                                 home_table_info, DSN, start_end_flag):
     """Fill ecarid_athome table.
     The `ecarid_athome` table has the combined information of `home_table` and `ecar_table`.
-    All car activities and a flag wether the activity started or ended at home.
+    All car activities and a flag whether the activity started or ended at home.
     For this purpose we treat the start and the end of a segment seperatly
     
     Args:
@@ -180,6 +186,7 @@ def fill_ecarid_is_athome_table(ecarid_athome_table_info, ecar_table_info,
 
     # set variable fields depending on if you treat the start or the end of
     # an entry
+    engine = create_engine('postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(**DSN))
 
     start_end_dict = {}
     start_end_dict['start_end_string'] = sql.SQL(start_end_flag.capitalize())
@@ -228,6 +235,11 @@ def fill_ecarid_is_athome_table(ecarid_athome_table_info, ecar_table_info,
                     and {ecarid_athome_table_name}.start_end = '{start_end_string}';""").format(**{**ecarid_athome_table_info, **start_end_dict})
         cur.execute(query)
         conn.commit()
+        #
+        # # export bmwid_athome_table
+        # query = """select * from {ecarid_athome_table_name};""".format(**ecarid_athome_table_info)
+        # return pd.read_sql(query, engine)
+
 
 
 def impute_iteration(df):   
@@ -360,10 +372,10 @@ def fill_trivial_gaps(DSN, ecar_table_info):
         
         nb_nans_old = nb_nans
         
-    print('Total number of values: ', df['latitude_start'].shape[0])
-    print('Intial values missing: ', nb_nans_init)
-    print('Values filled: ', nb_nans_init - nb_nans)
-    print('Values not filled: ', nb_nans)
+    logging.info('Total number of values: %s', str(df['latitude_start'].shape[0]))
+    logging.info('Intial values missing: %s', str(nb_nans_init))
+    logging.info('Values filled: %s', str(nb_nans_init - nb_nans))
+    logging.info('Values not filled: %s', str(nb_nans))
     
     # write to database
     df.to_sql(name='temp_table_trivial_imputation', con=engine, index=False,
@@ -598,6 +610,42 @@ def aggregate_home_nothome_segments(ecar_unique_timestamps):
     return ecar_unique_agg
 
 
+# export baseline data
+def export_baseline_data(ecar_table_info, ecarid_athome_table_info, DSN,
+                         min_date=datetime.datetime(year=2017, month=2, day=1),
+                         max_date=datetime.datetime(year=2018, month=12, day=31)):
+
+    engine = create_engine('postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(**DSN))
+
+    ecar_data_query = """select id, vin, zustand, timestamp_start_utc,
+                        timestamp_end_utc, soc_customer_start, soc_customer_end,
+                       user_id
+                       from {schema_single}.{ecar_table_name_single}""".format(**ecar_table_info)
+
+    ecarid_is_athome_query = """select bmw_id, is_home
+                                from {schema_single}.{ecarid_athome_table_name_single}
+                                where start_end = 'Start'""".format(**ecarid_athome_table_info)
+
+    ecar_data = pd.read_sql(ecar_data_query, engine)
+    ecar_data.set_index('id', inplace=True)
+
+    ecarid_is_athome = pd.read_sql(ecarid_is_athome_query, engine)
+    ecarid_is_athome.set_index('bmw_id', inplace=True)
+
+    ecar_data_joined = ecar_data.join(ecarid_is_athome['is_home'])
+
+    ecar_data_joined['is_home'] = ecar_data_joined['is_home'].fillna(False)
+    ecar_data_joined.sort_values(by=['vin', 'timestamp_start_utc'], inplace=True)
+
+    # drop data where timestamps are not plausible
+    ix = ecar_data_joined['timestamp_start_utc'] <= ecar_data_joined['timestamp_end_utc']
+    ecar_data_joined = ecar_data_joined[ix]
+
+    # filter timestamps
+    ecar_data_joined = ecar_data_joined[ecar_data_joined['timestamp_start_utc'] >= min_date]
+    ecar_data_joined = ecar_data_joined[ecar_data_joined['timestamp_start_utc'] <= max_date]
+
+    return ecar_data_joined
 
 if __name__ == '__main__':
 
@@ -615,16 +663,19 @@ if __name__ == '__main__':
     """
     # define projections
     logging.basicConfig(level=logging.DEBUG)
-    p_source = pyproj.Proj(init='epsg:21781')
-    p_dest = pyproj.Proj(init='epsg:4326')
+    transformer = Transformer.from_crs('epsg:21781', 'epsg:4326', always_xy=True)
 
-    file_out = os.path.join("..", "data_PV_Solar", "Car_is_at_home_table_UTC.csv")
+    file_out = os.path.join(".", "data", "car_is_at_home_table_UTC.csv")
+    file_out_baseline = os.path.join(".", "data", "data_baseline.csv")
+
+    min_date = datetime.datetime(year=2017, month=2, day=1)
+    max_date = datetime.datetime(year=2018, month=12, day=31)
 
     # a file that matches the ecar data_PV_Solar to home adresses (via an id)
-    df = pd.read_csv(os.path.join('..', 'data_PV_Solar', 'matching_bmw_to_address.csv'), sep=";")
+    df = pd.read_csv(os.path.join('.', 'data', 'matching_bmw_to_address.csv'), sep=";")
 
     # transform to wgs84
-    long,lat = pyproj.transform(p_source, p_dest, df['GWR_x'].values, df['GWR_y'].values)
+    long, lat = transformer.transform(df['GWR_x'].values, df['GWR_y'].values)
     df['long'] = long
     df['lat'] = lat
 
@@ -651,8 +702,16 @@ if __name__ == '__main__':
         start_end_flag='start')
     logging.info("fill_ecarid_is_athome_table-end")
     fill_ecarid_is_athome_table(ecarid_athome_table_info=ecarid_athome_table_info,
-        ecar_table_info=ecar_table_info, home_table_info=home_table_info,
-        DSN=DSN, start_end_flag='end')
+                            ecar_table_info=ecar_table_info, home_table_info=home_table_info,
+                            DSN=DSN, start_end_flag='end')
+
+    logging.info("write {}".format(file_out_baseline))
+
+    baseline_data = export_baseline_data(ecar_table_info, ecarid_athome_table_info, DSN,
+                                         min_date=min_date,
+                                         max_date=max_date)
+
+    baseline_data.to_csv(file_out_baseline)
     
 
     logging.info("create_segmented_ecar_data")
@@ -663,6 +722,11 @@ if __name__ == '__main__':
     logging.info("aggregate_home_nothome_segments")
     ecar_unique_agg = aggregate_home_nothome_segments(ecar_unique_timestamps)
 
+    # filter timestamps
+    ecar_unique_agg = ecar_unique_agg[ecar_unique_agg['start'] >= min_date]
+    ecar_unique_agg = ecar_unique_agg[ecar_unique_agg['end'] <= max_date]
+
     logging.info("to_csv")
     ecar_unique_agg.to_csv(file_out, index=False)
     logging.info("done")
+
