@@ -20,8 +20,6 @@ import numpy as np
 from multiprocessing import Pool
 import time
 
-
-
 def test_solar_model_UTC():
 
     # sun rises in siwtzerland ~ 08:30 UTC + 1
