@@ -1,31 +1,33 @@
-import pickle
-from src.methods.PV_interface import get_PV_generated, get_PV_generated_from_pandas_row
-from src.methods.helpers import validate_data, filter_good_users
-from src.methods.loading_and_preprocessing import load_car_data, preprocess_car_data, load_baseline_car_data
-from src.methods.compute_additional_columns import compute_additional_columns
-import pandas as pd
-import matplotlib.pyplot as plt
-
+from src.methods.PV_interface import get_PV_generated_from_pandas_row
 import copy
-from src.methods.scenarios_for_users import create_scenario_table
-import datetime
-import os
-import numpy as np
-from multiprocessing import Pool
-import seaborn as sns
-from functools import partial
 import logging
+import os
+from functools import partial
+from multiprocessing import Pool
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+
+from src.methods.PV_interface import get_PV_generated_from_pandas_row
+from src.methods.compute_additional_columns import compute_additional_columns
+from src.methods.helpers import filter_good_users
+from src.methods.loading_and_preprocessing import load_car_data, preprocess_car_data, load_baseline_car_data
+from src.methods.scenarios_for_users import create_scenario_table
+
 logging.basicConfig(
-                    filename='calculate_scenarios.log',
-                    format='%(asctime)s %(levelname)-8s %(message)s',
-                    level=logging.DEBUG,
-                    datefmt='%Y-%m-%d %H:%M:%S')
+    filename='calculate_scenarios.log',
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.DEBUG,
+    datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def readFile(filename):
     filehandle = open(filename)
     print(filehandle.read())
     filehandle.close()
+
 
 def prepare_baseline_data(filepath_baseline):
     """do the following preprocessing steps for the baseline data
@@ -43,6 +45,7 @@ def prepare_baseline_data(filepath_baseline):
                                                   'soc_customer_end': 'soc_end'})
 
     return data_baseline
+
 
 def get_cached_csv(filepath, data_raw, max_power_kw=11):
     data = data_raw.copy()
@@ -74,17 +77,10 @@ def get_cached_csv(filepath, data_raw, max_power_kw=11):
     return data
 
 
-
-
-
-
-
-
 if __name__ == '__main__':
-
-    #battery_capacity = 20
-    battery_capacity = 13.5 #tesla power box.
-    battery_charging_power = 12 # Dauerbetrieb
+    # battery_capacity = 20
+    battery_capacity = 13.5  # tesla power box.
+    battery_charging_power = 12  # Dauerbetrieb
     max_power_kw = 11
 
     path_to_data_folder = os.path.join('.', 'data')
@@ -115,14 +111,15 @@ if __name__ == '__main__':
     preprocessed_data = preprocess_car_data(preprocessed_data)
     data_with_columns = compute_additional_columns(preprocessed_data, path_to_data_folder, battery_charging_power)
 
-    table = create_scenario_table(data_baseline, data_scenario_2, data_with_columns, battery_capacity, battery_charging_power, path_to_data_folder)
+    table = create_scenario_table(data_baseline, data_scenario_2, data_with_columns, battery_capacity,
+                                  battery_charging_power, path_to_data_folder)
     print("done, start plotting")
     table.to_csv(os.path.join('data', 'table_validated.csv'))
 
     plt.xlim(0, 1)
     sns.distplot(table['Baseline'], hist=False, rug=True)
     plt.title("Scenario Baseline - mean {:.2f}".format(table['Baseline'].mean()))
-    #print(f"mean: {np.mean(table['Scenario 1'])}")
+    # print(f"mean: {np.mean(table['Scenario 1'])}")
     plt.savefig(os.path.join('plots', 'Baseline_PV_model'))
     plt.close()
 
@@ -133,13 +130,11 @@ if __name__ == '__main__':
     plt.savefig(os.path.join('plots', 'Scenario 1_PV_model'))
     plt.close()
 
-
     plt.xlim(0, 1)
     sns.distplot(table['Scenario 2'], hist=False, rug=True)
     plt.title("Scenario 2 - mean {:.2f}".format(table['Scenario 2'].mean()))
     plt.savefig(os.path.join('plots', 'Scenario 2_PV_model'))
     plt.close()
-
 
     plt.xlim(0, 1)
     sns.distplot(table['Scenario 3'], hist=False, rug=True)

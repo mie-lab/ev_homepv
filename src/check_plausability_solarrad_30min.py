@@ -5,20 +5,17 @@ Created on Sep 8, 2018
 '''
 import csv
 import datetime
-from math import floor, ceil
 import os
+from math import floor, ceil
 
 import fiona
+import numpy as np
 import pyproj
 import rasterio
 from rasterio.crs import CRS
 from rasterio.windows import Window
 from shapely.geometry.geo import shape
 from shapely.geometry.polygon import Polygon
-
-import numpy as np
-from datetime import date
-
 
 cell_width_m = 0.5
 helf_cell_width_m = cell_width_m * 0.5
@@ -71,7 +68,7 @@ if __name__ == '__main__':
             lon, lat = pyproj.transform(proj_lv03, pyproj.Proj("+init=EPSG:4326"), x, y)
             d = datetime.date(2017, 1, 1)
             while d.year < 2018:
-#                 logging.info("{}_{}: {}".format(btype, bid, str(d)))
+                #                 logging.info("{}_{}: {}".format(btype, bid, str(d)))
                 year = d.year
                 month = d.month
                 day = d.day
@@ -98,37 +95,37 @@ if __name__ == '__main__':
                     dd += datetime.timedelta(minutes=30)
                 d += datetime.timedelta(days=1)
 
-
             # read solar data_PV_Solar
-            with rasterio.open(os.path.join("/data_PV_Solar","solarrad30min","rad30min_{}_{}.tif".format(btype, bid))) as rst:
+            with rasterio.open(
+                    os.path.join("/data_PV_Solar", "solarrad30min", "rad30min_{}_{}.tif".format(btype, bid))) as rst:
                 print("read data_PV_Solar")
                 data = rst.read()
- 
+
                 print("aggregate")
                 data_year = np.sum(data, axis=0)
- 
+
                 fwd = rst.transform
- 
+
                 bds = geom.bounds
                 minx = floor(bds[0])
                 miny = floor(bds[1])
                 maxx = ceil(bds[2])
                 maxy = ceil(bds[3])
- 
+
                 tot_rad = 0.0
                 tot_rads = []
 
-#                 c, r = ~fwd * (x, y)
-#                 c = int(c)
-#                 r = int(r)
-# 
-#                 i = 0
-#                 d = datetime.datetime(2017, 1, 1, 0, 0)
-#                 while(d.year < 2018):
-# 
-#                     print(hor_sis[i], rst.read(i + 1)[r, c])
-#                     d += datetime.timedelta(minutes=30)
-#                     i += 1
+                #                 c, r = ~fwd * (x, y)
+                #                 c = int(c)
+                #                 r = int(r)
+                #
+                #                 i = 0
+                #                 d = datetime.datetime(2017, 1, 1, 0, 0)
+                #                 while(d.year < 2018):
+                #
+                #                     print(hor_sis[i], rst.read(i + 1)[r, c])
+                #                     d += datetime.timedelta(minutes=30)
+                #                     i += 1
 
                 print("extract data_PV_Solar")
                 for x in np.arange(minx + helf_cell_width_m, maxx, cell_width_m):
@@ -158,5 +155,3 @@ if __name__ == '__main__':
 
                         tot_rad += data_year[r, c] * 0.5 * area
                 print(tot_rad / barea)
-
-

@@ -1,7 +1,7 @@
+import copy
+
 import pandas as pd
 
-import copy
-import os
 
 def load_car_data(filepath, filter=True):
     """
@@ -18,32 +18,39 @@ def load_car_data(filepath, filter=True):
     data_PV_Solar: pandas-df
         loaded data_PV_Solar
     """
-    data = pd.read_csv(filepath, sep = ',')
-    #print(data_PV_Solar)
+    data = pd.read_csv(filepath, sep=',')
+    # print(data_PV_Solar)
     relevant_columns = ['vin', 'start', 'soc_start', 'is_home', 'end', 'soc_end', 'total_segment_consumption']
     if filter:
         data = data[relevant_columns]
-    data = data.drop(data[data['vin'] == '0007f9c8534b7924352bed2b9842b1fc'].index) # delete that column as user has zero demand
+    data = data.drop(
+        data[data['vin'] == '0007f9c8534b7924352bed2b9842b1fc'].index)  # delete that column as user has zero demand
     data = data.drop(
         data[data['vin'] == '003d3821dfaabc96fa1710c2128aeb62'].index)  # delete that column as user has zero demand
     data = data.drop(
-        data[data['vin'] == '00478e28c489e344b1db9f3bdf9aac99'].index)  # delete that column as house data_PV_Solar does not exist
+        data[data[
+                 'vin'] == '00478e28c489e344b1db9f3bdf9aac99'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '4f3417a1c272af8c8ae31eeb8ce060f4'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '4f3417a1c272af8c8ae31eeb8ce060f4'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '8335678314417d1094b8b956bac57761'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '8335678314417d1094b8b956bac57761'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == 'a2c77c6bfd36c79bab9d598575cbf6ab'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == 'a2c77c6bfd36c79bab9d598575cbf6ab'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == 'e4aac45c1a674b721f2e3edf2b385fca'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == 'e4aac45c1a674b721f2e3edf2b385fca'].index)  # delete that column as house data_PV_Solar does not exist
 
     data = data.drop(
         data[
-            data['vin'] == '00006bbc00f87b6d42ddf1589d2a45b6'].index)  # delete that column as vin to user ID mapping does not exist
+            data[
+                'vin'] == '00006bbc00f87b6d42ddf1589d2a45b6'].index)  # delete that column as vin to user ID mapping does not exist
 
     data = data.drop(
         data[
@@ -136,25 +143,32 @@ def load_car_data(filepath, filter=True):
                 'vin'] == '2552357d4d60a6b211d0ce4d46a73249'].index)  # delete that column as vin to user ID mapping does not exist
     data = data.drop(
         data[
-            data['vin'] == '2bda8c8d3cde1c63e3c43bd8507de8b0'].index)  # delete that column as vin to user ID mapping does not exist
+            data[
+                'vin'] == '2bda8c8d3cde1c63e3c43bd8507de8b0'].index)  # delete that column as vin to user ID mapping does not exist
     data = data.drop(
         data[
-            data['vin'] == '47274133826e35cdc6b4139f5c6dd113'].index)  # delete that column as vin to user ID mapping does not exist
+            data[
+                'vin'] == '47274133826e35cdc6b4139f5c6dd113'].index)  # delete that column as vin to user ID mapping does not exist
     data = data.drop(
         data[
-            data['vin'] == '4c5acf8392125d59685fccd583b8fa4b'].index)  # delete that column as vin to user ID mapping does not exist
+            data[
+                'vin'] == '4c5acf8392125d59685fccd583b8fa4b'].index)  # delete that column as vin to user ID mapping does not exist
     data = data.drop(
         data[
-            data['vin'] == '59444c69b5f8932561fd115485b3cffc'].index)  # delete that column as vin to user ID mapping does not exist
+            data[
+                'vin'] == '59444c69b5f8932561fd115485b3cffc'].index)  # delete that column as vin to user ID mapping does not exist
     data = data.drop(
         data[
-            data['vin'] == '6f13f5ee5129ad3c15ce573ee77152ff'].index)  # delete that column as vin to user ID mapping does not exist
+            data[
+                'vin'] == '6f13f5ee5129ad3c15ce573ee77152ff'].index)  # delete that column as vin to user ID mapping does not exist
     data = data.drop(
         data[
-            data['vin'] == '709475ceb9f0c73b6469a88068816c1c'].index)  # delete that column as vin to user ID mapping does not exist
+            data[
+                'vin'] == '709475ceb9f0c73b6469a88068816c1c'].index)  # delete that column as vin to user ID mapping does not exist
     data = data.drop(
         data[
-            data['vin'] == '87845b273fbb71a38cd5379bce6a842f'].index)  # delete that column as vin to user ID mapping does not exist
+            data[
+                'vin'] == '87845b273fbb71a38cd5379bce6a842f'].index)  # delete that column as vin to user ID mapping does not exist
     data = data.drop(
         data[
             data[
@@ -178,6 +192,7 @@ def load_car_data(filepath, filter=True):
 
     return data
 
+
 def load_baseline_car_data(filepath, filter=True):
     data = pd.read_csv(filepath, sep=',')
 
@@ -187,52 +202,61 @@ def load_baseline_car_data(filepath, filter=True):
         data[data['vin'] == '003d3821dfaabc96fa1710c2128aeb62'].index)  # delete that column as user has zero demand
     data = data.drop(
         data[
-            data['vin'] == '00478e28c489e344b1db9f3bdf9aac99'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '00478e28c489e344b1db9f3bdf9aac99'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '4f3417a1c272af8c8ae31eeb8ce060f4'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '4f3417a1c272af8c8ae31eeb8ce060f4'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '8335678314417d1094b8b956bac57761'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '8335678314417d1094b8b956bac57761'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == 'a2c77c6bfd36c79bab9d598575cbf6ab'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == 'a2c77c6bfd36c79bab9d598575cbf6ab'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '00a0e0b03bf164ce962ff23c9e3c15e9'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '00a0e0b03bf164ce962ff23c9e3c15e9'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '02ffd5d15fe21d4a0537573b8f605415'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '02ffd5d15fe21d4a0537573b8f605415'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '05cf2acb2174f9962db4eb56eacf9ddd'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '05cf2acb2174f9962db4eb56eacf9ddd'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '06e3e1a3151e99e11c902721e25a5839'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '06e3e1a3151e99e11c902721e25a5839'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '080857683e8e4e34316a79b07af8123d'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '080857683e8e4e34316a79b07af8123d'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '08e26ea55f741801141c5b77216c843f'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '08e26ea55f741801141c5b77216c843f'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '08ef62af248b9208348ad293eab4f1a7'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '08ef62af248b9208348ad293eab4f1a7'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '0a875dcb2b38748cb9537f37a9f48b10'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '0a875dcb2b38748cb9537f37a9f48b10'].index)  # delete that column as house data_PV_Solar does not exist
     data = data.drop(
         data[
-            data['vin'] == '06e3e1a3151e99e11c902721e25a5839'].index)  # delete that column as house data_PV_Solar does not exist
+            data[
+                'vin'] == '06e3e1a3151e99e11c902721e25a5839'].index)  # delete that column as house data_PV_Solar does not exist
 
-
-
-
-
-
-    #print(data_PV_Solar)
+    # print(data_PV_Solar)
 
     return data
+
 
 def preprocess_car_data(data):
     """
@@ -255,6 +279,7 @@ def preprocess_car_data(data):
     preprocessed_data['delta_soc'] = preprocessed_data['soc_end'] - preprocessed_data['soc_start']
 
     return preprocessed_data
+
 
 """ Do not touch PV data_PV_Solar in this paper
 def load_PV_data(directory_path):

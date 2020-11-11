@@ -1,18 +1,17 @@
-import sys, os
-import copy, datetime
-import json, gzip
-from os.path import pardir, sep
+import datetime
+import gzip
+import json
+import os
+import sys
+
 sys.path.append('.')
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.methods.PV_interface import get_PV_generated
 from src.methods.helpers import validate_data, get_user_id
-from src.methods.loading_and_preprocessing import load_car_data, preprocess_car_data, load_baseline_car_data
-from src.methods.compute_additional_columns import compute_additional_columns
-
+from src.methods.loading_and_preprocessing import load_car_data
 
 if __name__ == "__main__":
     path_to_data_folder = r'D:\Data\Polybox\Shared\ev_homepv\data'
@@ -22,7 +21,7 @@ if __name__ == "__main__":
     data = validate_data(data, 'vin', path_to_data_folder)
 
     all_vehicles = set(data['vin'].unique())
-    
+
     data_to_plot = []
     for vehicle in all_vehicles:
         wh_per_band = []
@@ -67,5 +66,5 @@ if __name__ == "__main__":
     plt.scatter(data_to_plot['day'], data_to_plot['kwh_produced'], s=2, alpha=0.5)
     ax.set_xlabel('Days in 2017 [d]')
     ax.set_ylabel('Energy Produced by PV [kWh]')
-    #data_to_plot.plot.kde(ax=ax)
+    # data_to_plot.plot.kde(ax=ax)
     plt.savefig('plots/energy_generation.png', bbox_inches='tight', dpi=300)

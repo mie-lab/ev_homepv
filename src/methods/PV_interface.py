@@ -1,7 +1,7 @@
 import datetime
 import os
-import numpy as np
 
+import numpy as np
 import pint
 
 from src.methods.helpers import get_user_id
@@ -11,10 +11,11 @@ ureg = pint.UnitRegistry()
 
 # TODO
 pv_efficency = 0.18
-#pv_efficency = 180
+# pv_efficency = 180
 
 
 pv_cache = {}
+
 
 def get_PV_generated_from_pandas_row(ix_row, max_power_kw=11):
     """wrapper function for get_PV_generated that can be used with the
@@ -28,7 +29,7 @@ def get_PV_generated_from_pandas_row(ix_row, max_power_kw=11):
         return -1
 
 
-def get_PV_generated(start, end, house_ID, path_to_data_folder=os.path.join('.','data'), max_power_kw=None):
+def get_PV_generated(start, end, house_ID, path_to_data_folder=os.path.join('.', 'data'), max_power_kw=None):
     # todo: efficiency. If we still have to take into account the efficiency it has to be done in the method
     #  PVModel.get_solar_radiation() because otherwise the max_power_kw restriction would be too strong
     """
@@ -53,17 +54,18 @@ def get_PV_generated(start, end, house_ID, path_to_data_folder=os.path.join('.',
     end_datetime = datetime.datetime.strptime(str(end), "%Y-%m-%d %H:%M:%S")
 
     generated_energy = pv.get_solar_radiation("PVMODEL_SPV170",
-                             start_datetime,
-                             end_datetime,
-                            max_power_kw=max_power_kw)
+                                              start_datetime,
+                                              end_datetime,
+                                              max_power_kw=max_power_kw)
     generated_KWh = generated_energy / 1000
     return generated_KWh
+
 
 def get_max_pv_charged(start, end, max_charging_power):
     start_datetime = datetime.datetime.strptime(str(start), "%Y-%m-%d %H:%M:%S")
     end_datetime = datetime.datetime.strptime(str(end), "%Y-%m-%d %H:%M:%S")
-    max_charged = (end_datetime. timestamp() - start_datetime.timestamp()) * max_charging_power / (60*60)
-   # print(start)
-   # print(end)
-   # print(max_charged)
+    max_charged = (end_datetime.timestamp() - start_datetime.timestamp()) * max_charging_power / (60 * 60)
+    # print(start)
+    # print(end)
+    # print(max_charged)
     return np.float(max_charged)

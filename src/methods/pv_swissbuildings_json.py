@@ -3,14 +3,16 @@ Created on Dec 12, 2019
 
 @author: rene
 '''
-import os
-import numpy as np
 import datetime
 import gzip
 import json
-import pint
+import os
 import shutil
+
+import pint
+
 ureg = pint.UnitRegistry()
+
 
 def unpack_file(filename):
     assert filename[-3:] == '.gz'
@@ -23,8 +25,8 @@ def unpack_file(filename):
 class PVModel:
 
     def __init__(self, user_id, path_to_data_folder):
-        
-        #with gzip.GzipFile(os.path.join("data_PV_Solar", "solar_rad_{}.json.gz".format(user_id)), 'r') as f:
+
+        # with gzip.GzipFile(os.path.join("data_PV_Solar", "solar_rad_{}.json.gz".format(user_id)), 'r') as f:
         #    self.data_PV_Solar = json.loads(f.read()))
         filepath = os.path.join(path_to_data_folder,
                                 "data_PV_Solar")
@@ -34,12 +36,12 @@ class PVModel:
         if not os.path.isfile(filepath):
             unpack_file(filepath + '.gz')
 
-
         with open(filepath, 'r') as f:
             self.data = json.loads(f.read())
             self.user_id = user_id
 
-    def _get_band(self, dt):
+    @staticmethod
+    def _get_band(dt):
         """
             Returns band from timestamp
         """
@@ -50,7 +52,8 @@ class PVModel:
 
         return half_hours + 1
 
-    def _get_datetime(self, b):
+    @staticmethod
+    def _get_datetime(b):
         """
             Returns timestamp from band
         """
@@ -129,7 +132,7 @@ class PVModel:
                 _tot_Wh = _tot_Wh * percentage_in_start_band
             if i == last_iter:
                 _tot_Wh = _tot_Wh * percentage_in_end_band
-                
+
             # include max limit here
             if max_power_kw is not None:
                 # control for maximum charging power. We can charge maximum of_
@@ -144,11 +147,10 @@ class PVModel:
                 tot_Wh += _tot_Wh
 
         return tot_Wh
-        #return tot_Wh * ureg.watthour
+        # return tot_Wh * ureg.watthour
 
+# pv = PVModel("1761")
 
-#pv = PVModel("1761")
-
-#print(pv.get_solar_radiation("PVMODEL_SPV170",
+# print(pv.get_solar_radiation("PVMODEL_SPV170",
 #                             datetime.datetime(2017, 1, 1, 0, 0),
 #                             datetime.datetime(2017, 12, 31, 23, 59)))

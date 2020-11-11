@@ -3,10 +3,11 @@ import copy
 import numpy as np
 import pint
 
-from src.methods.PV_interface import get_PV_generated, get_max_pv_charged, get_PV_generated_from_pandas_row
 from src.methods.helpers import soc2remainingCharge
 
 ureg = pint.UnitRegistry()
+
+
 def compute_additional_columns(car_data, path_to_data_folder, max_kw_per_hour):
     """
     adds the column:
@@ -28,18 +29,17 @@ def compute_additional_columns(car_data, path_to_data_folder, max_kw_per_hour):
     car_data_copy = copy.deepcopy(car_data)
 
     needed_by_car = [soc2remainingCharge(car_data_copy["soc_start"][car_data_copy.index[i]]) -
-                                      soc2remainingCharge(car_data_copy["soc_end"][car_data_copy.index[i]])
-                                                          for i in range(len(car_data_copy.index))]
+                     soc2remainingCharge(car_data_copy["soc_end"][car_data_copy.index[i]])
+                     for i in range(len(car_data_copy.index))]
     needed_by_car = np.maximum(0, needed_by_car)
     assert (np.all(np.array(needed_by_car) >= 0))
     car_data_copy['needed_by_car'] = needed_by_car
 
-    car_data_copy['coverage_ratio'] = car_data_copy['generated_by_pv']/car_data_copy['needed_by_car']
+    car_data_copy['coverage_ratio'] = car_data_copy['generated_by_pv'] / car_data_copy['needed_by_car']
 
     charged_from_pv = [np.minimum(car_data_copy['generated_by_pv'][car_data_copy.index[i]],
-                                                  car_data_copy['needed_by_car'][car_data_copy.index[i]] )
-                                       for i in range(len(car_data_copy.index))]
-
+                                  car_data_copy['needed_by_car'][car_data_copy.index[i]])
+                       for i in range(len(car_data_copy.index))]
 
     # exclude negative charged from PV to prevent artificial results
     # charged_from_pv = np.maximum(0, charged_from_pv)

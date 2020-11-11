@@ -1,19 +1,17 @@
-import sys, os
-import copy, datetime, math
-import json, gzip
-from os.path import pardir, sep
+import datetime
+import math
+import os
+import sys
+
 sys.path.append('.')
 
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import seaborn as sns
 
-from src.methods.PV_interface import get_PV_generated
 from src.methods.helpers import validate_data, get_user_id
-from src.methods.loading_and_preprocessing import load_car_data, preprocess_car_data, load_baseline_car_data
-from src.methods.compute_additional_columns import compute_additional_columns
+from src.methods.loading_and_preprocessing import load_car_data
 
 
 def soc_to_kwh(soc_diff):
@@ -31,7 +29,7 @@ if __name__ == "__main__":
     raw_bmw_data = pd.read_csv(raw_bmw_filepath, parse_dates=['timestamp'])
 
     all_vehicles = set(data['vin'].unique())
-    
+
     data_to_plot = []
     for vehicle in all_vehicles:
         veh_en_cons = []
@@ -40,7 +38,8 @@ if __name__ == "__main__":
         raw_bmw_data_vehicle = raw_bmw_data_vehicle.sort_values(['timestamp'])
 
         # Go through everything in pairs, compute the difference between pairs.
-        for (idx_1, row_1), (idx_2, row_2) in zip(raw_bmw_data_vehicle[:-1].iterrows(), raw_bmw_data_vehicle[1:].iterrows()):
+        for (idx_1, row_1), (idx_2, row_2) in zip(raw_bmw_data_vehicle[:-1].iterrows(),
+                                                  raw_bmw_data_vehicle[1:].iterrows()):
             t_diff = row_2['timestamp'] - row_1['timestamp']
             soc_diff = row_2['soc'] - row_1['soc']
             if soc_diff >= 0:
@@ -53,7 +52,7 @@ if __name__ == "__main__":
                 'timestamp': row_1['timestamp'] + (row_2['timestamp'] - row_1['timestamp']) / 2,
                 'energy_required_kwh': energy_required_kwh
             })
-            
+
         veh_en_cons = pd.DataFrame(veh_en_cons, columns=['timestamp', 'energy_required_kwh'])
 
         # For each day, compute the average production per band, and multiply by 24 * 2.
@@ -76,7 +75,7 @@ if __name__ == "__main__":
     axes = []
     axes.append(fig.add_subplot(gs[0, :-1]))
     axes.append(fig.add_subplot(gs[0, -1]))
-    
+
     plt.sca(axes[0])
     plt.scatter(data_to_plot['day'], data_to_plot['energy_required_kwh'], s=2, alpha=0.5)
     axes[0].set_xlabel('Days in 2017 [d]')

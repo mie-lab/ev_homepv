@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import copy
 from src.methods.scenarios_for_users import create_scenario_table
 from src.methods.PV_interface import get_PV_generated, get_PV_generated_from_pandas_row
-from src.methods.helpers import validate_data, filter_good_users, soc2remainingCharge, remainingCharge2soc
+from src.methods.helpers import soc2remainingCharge, remainingCharge2soc
 from src.methods.loading_and_preprocessing import load_car_data, preprocess_car_data, load_baseline_car_data
 from src.methods.compute_additional_columns import compute_additional_columns
 from src.ecar_data_preprocessing import export_baseline_data
@@ -125,13 +125,6 @@ def test_and_write_baseline_data():
     assert baseline_data[ix].size == 0
     baseline_data.to_csv(file_out_baseline)
 
-def test_new_filter_method():
-
-    data_baseline2 = load_baseline_car_data(os.path.join('data', 'data_baseline.csv'))
-    baseline_filtered_old = validate_data(data_baseline2, 'vin', os.path.join('.', 'data'))
-    baseline_filtered_new = filter_good_users(data_baseline2, 'vin', os.path.join('.', 'data'))
-
-    assert baseline_filtered_old.shape == baseline_filtered_new.shape
 
 def test_inverse_soc2charge():
     soc_array = np.arange(0, 2.5, 100)

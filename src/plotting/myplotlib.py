@@ -4,19 +4,17 @@ Created on Mar 27, 2018
 @author: rene
 '''
 
-from enum import Enum
-import pprint
-import subprocess
 import os
+import pickle as pl
+import subprocess
+from enum import Enum
+
 import matplotlib
-# matplotlib.use("Agg")
-from mpl_toolkits.mplot3d import Axes3D
-from pint.registry import UnitRegistry
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-import pickle as pl
-
+# matplotlib.use("Agg")
+from pint.registry import UnitRegistry
 
 ureg = UnitRegistry()
 
@@ -60,21 +58,20 @@ journal_config[Journal.ELSEVIER] = {Columnes.ONE: 90.0 * ureg.millimeter,
                                     FONT: 'Helvetica',
                                     FONT_SIZE: 10}
 
-
 journal_config[Journal.POWERPOINT] = {Columnes.ONE: 120.0 * ureg.millimeter,
-                                    Columnes.ONE_POINT_FIVE: 180.0 * ureg.millimeter,
-                                    Columnes.TWO: 240.0 * ureg.millimeter,
-                                    MAX_HEIGHT: 117.0 * ureg.millimeter,
-                                    FONT: 'Helvetica',
-                                    FONT_SIZE: 14}
-
+                                      Columnes.ONE_POINT_FIVE: 180.0 * ureg.millimeter,
+                                      Columnes.TWO: 240.0 * ureg.millimeter,
+                                      MAX_HEIGHT: 117.0 * ureg.millimeter,
+                                      FONT: 'Helvetica',
+                                      FONT_SIZE: 14}
 
 journal_config[Journal.POWERPOINT_A3] = {Columnes.ONE: 14.0 * ureg.inch,
-                                    Columnes.ONE_POINT_FIVE: 21.0 * ureg.inch,
-                                    Columnes.TWO: 31.0 * ureg.inch,
-                                    MAX_HEIGHT: 40.0 * ureg.inch,
-                                    FONT: 'Arial',
-                                    FONT_SIZE: 26}
+                                         Columnes.ONE_POINT_FIVE: 21.0 * ureg.inch,
+                                         Columnes.TWO: 31.0 * ureg.inch,
+                                         MAX_HEIGHT: 40.0 * ureg.inch,
+                                         FONT: 'Arial',
+                                         FONT_SIZE: 26}
+
 
 def figsize(fig_height_mm=None,
             columnes=Columnes.TWO,
@@ -87,7 +84,7 @@ def figsize(fig_height_mm=None,
     fig_width_mm = journal_config[journal][columnes]
 
     if fig_height_mm is None:
-        golden_mean = (np.sqrt(5.0) - 1.0) / 2.0    # Aesthetic ratio
+        golden_mean = (np.sqrt(5.0) - 1.0) / 2.0  # Aesthetic ratio
         fig_height_mm = fig_width_mm * golden_mean
     else:
         fig_height_mm *= ureg.millimeter
@@ -156,7 +153,6 @@ def init_figure(nrows=1,
                 disabled_spines=['top', 'right'],
                 dpi=600,
                 **fig_kw):
-
     set_rcparams(journal)
 
     f, axs = plt.subplots(nrows=nrows,
@@ -181,7 +177,6 @@ def init_figure(nrows=1,
 
 
 def save_figure(outpath, dpi=600, bbox_extra_artists=()):
-
     # Pickle dump figure for later reuse
     pl.dump(plt.gcf(), open(outpath.replace('.png', '.pickle'), 'wb'))
 
@@ -198,12 +193,12 @@ def save_figure(outpath, dpi=600, bbox_extra_artists=()):
                 transparent=True,
                 bbox_extra_artists=bbox_extra_artists,
                 bbox_inches='tight')
-  
+
     # Save as pdf
     plt.savefig(outpath.replace('.png', '.pdf'), dpi=dpi,
                 bbox_extra_artists=bbox_extra_artists,
                 bbox_inches='tight')
-  
+
     # Crop pdf
     subprocess.run(["pdfcrop",
                     outpath.replace('.png', '.pdf'),
@@ -217,7 +212,7 @@ def save_figure(outpath, dpi=600, bbox_extra_artists=()):
                     "-trim",
                     "+repage",
                     outpath.replace('.png', '-crop.png')])
-  
+
     subprocess.run(["convert",
                     outpath.replace('.png', '-transparent.png'),
                     "-fuzz",
@@ -255,7 +250,7 @@ def example_matplotlib():
                         columnes=Columnes.TWO)
 
     xs = np.arange(1.0, 10.0)
-    ys = xs**2
+    ys = xs ** 2
 
     ax.plot(xs, ys)
     ax.set_title("A title")
@@ -266,7 +261,6 @@ def example_matplotlib():
 
 
 def example_geopandas():
-
     import geopandas as gpd
 
     cmap = matplotlib.cm.get_cmap('rocket')
@@ -315,18 +309,17 @@ def example_3d():
 
     theta = np.linspace(-4 * np.pi, 4 * np.pi, 100)
     z = np.linspace(-2, 2, 100)
-    r = z**2 + 1
+    r = z ** 2 + 1
     x = r * np.sin(theta)
     y = r * np.cos(theta)
     ax.plot(x, y, z, label='parametric curve')
     ax.legend()
 
     save_figure(outpath=r"/tmp/test3d.png")
-    subplot_kw=dict(projection='3d')
+    subplot_kw = dict(projection='3d')
 
 
 if __name__ == '__main__':
     example_matplotlib()
 #     example_geopandas()
 #     example_3d()
-
