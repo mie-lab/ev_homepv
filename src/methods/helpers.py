@@ -59,12 +59,17 @@ def get_id_matching_dict(filepath_matching):
     return dict(zip(myway_id, vin))
 
 
-def filter_good_users(data, attr, path_to_data_folder):
+def filter_good_users(data_raw, attr, path_to_data_folder):
     """
     data: Dataframe
     attr: column_name of vin column
     """
-
+    data = data_raw.copy()
+    vins_with_zero_demand = ['0007f9c8534b7924352bed2b9842b1fc',
+                             '003d3821dfaabc96fa1710c2128aeb62']
+    vins_only_in_baseline = ['0072a451141128e2b75f66a1a34b7c67',
+                             'a8efc1cea1e62b7b4ae65e19878edbcf']
+    other_bad_vins = vins_with_zero_demand + vins_only_in_baseline
     filepath = os.path.join(path_to_data_folder,
                             "manual_validation.csv")
     validation = pd.read_csv(filepath, sep=';')
@@ -76,9 +81,9 @@ def filter_good_users(data, attr, path_to_data_folder):
     good_userids = validation.loc[good_userids_ix, 'ID']
 
     # transform user_id to vin
-    # good_vins = good_userids.apply(lambda x: get_user_id(x, path_to_data_folder))
     good_vins = good_userids.map(matching_dict)
-
+    good_vins = good_vins.dropna()
+    good_vins = good_vins[~good_vins.isin(other_bad_vins)]
     good_row_ix = data[attr].isin(good_vins)
 
     return data[good_row_ix]
