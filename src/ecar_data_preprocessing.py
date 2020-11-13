@@ -25,7 +25,7 @@ import psycopg2
 from psycopg2 import sql
 from pyproj import Transformer
 from sqlalchemy import create_engine
-
+import warnings
 # import database login information
 from src.db_login import DSN
 from src.table_information import home_table_info, ecar_table_info, ecarid_athome_table_info
@@ -376,9 +376,13 @@ def fill_trivial_gaps(DSN, ecar_table_info):
     logging.info('Values not filled: %s', str(nb_nans))
 
     # write to database
-    df.to_sql(name='temp_table_trivial_imputation', con=engine, index=False,
-              if_exists='replace', chunksize=5000)
+    logging.info('Write filled table to database')
+    df = df[['id', 'latitude_start', 'longitude_start', 'latitude_end',  'longitude_end']]
 
+    df.to_sql(name='temp_table_trivial_imputation', con=engine, index=False,
+              if_exists='replace')
+
+    logging.info('update geometries in ecar data table')
     with psycopg2.connect(**DSN) as conn:
         cur = conn.cursor()
         query = sql.SQL("""UPDATE {ecar_table_name} as ecardata
@@ -391,6 +395,32 @@ def fill_trivial_gaps(DSN, ecar_table_info):
                     and tt.longitude_start is not Null
                     and ecardata.id = tt.id;""").format(**ecar_table_info)
 
+        cur.execute(query)
+
+        query = sql.SQL("""UPDATE {ecar_table_name} as ecardata
+                        SET latitude_end = tt.latitude_end,
+                            longitude_end = tt.longitude_end
+                        FROM temp_table_trivial_imputation as tt
+                        WHERE ecardata.latitude_end is Null 
+                            and ecardata.longitude_end is Null 
+                            and tt.latitude_end is not Null 
+                            and tt.longitude_end is not Null
+                            and ecardata.id = tt.id;""").format(**ecar_table_info)
+        cur.execute(query)
+
+        query = sql.SQL("""UPDATE {ecar_table_name}
+                    SET geom_start = ST_SetSRID(ST_MakePoint(longitude_start, latitude_start), 4326)
+                    WHERE latitude_start is not Null and longitude_start is not Null 
+                            and geom_start is Null;
+                    """).format(**ecar_table_info)
+
+        cur.execute(query)
+
+        query = sql.SQL("""UPDATE {ecar_table_name}
+                            SET geom_end = ST_SetSRID(ST_MakePoint(longitude_end, latitude_end), 4326)
+                            WHERE latitude_end is not Null and longitude_end is not Null
+                                and geom_end is Null;
+                            """).format(**ecar_table_info)
         cur.execute(query)
         conn.commit()
 
@@ -634,6 +664,8 @@ def export_baseline_data(ecar_table_info, ecarid_athome_table_info, DSN,
     ecar_data_joined = ecar_data.join(ecarid_is_athome['is_home'])
 
     ecar_data_joined['is_home'] = ecar_data_joined['is_home'].fillna(False)
+    # is_home flag relates to the start of a segment. If a trip (='fahrt') starts at home, 'is_home' is set to False
+    ecar_data_joined.loc[ecar_data_joined['zustand'] == 'fahrt', 'is_home'] = False
     ecar_data_joined.sort_values(by=['vin', 'timestamp_start_utc'], inplace=True)
 
     # drop data where timestamps are not plausible
@@ -642,7 +674,7 @@ def export_baseline_data(ecar_table_info, ecarid_athome_table_info, DSN,
 
     # filter timestamps
     ecar_data_joined = ecar_data_joined[ecar_data_joined['timestamp_start_utc'] >= min_date]
-    ecar_data_joined = ecar_data_joined[ecar_data_joined['timestamp_start_utc'] <= max_date]
+    ecar_data_joined = ecar_data_joined[ecar_data_joined['timestamp_end_utc'] <= max_date]
 
     return ecar_data_joined
 
@@ -668,7 +700,7 @@ if __name__ == '__main__':
     file_out_baseline = os.path.join(".", "data", "data_baseline.csv")
 
     min_date = datetime.datetime(year=2017, month=2, day=1)
-    max_date = datetime.datetime(year=2018, month=12, day=31)
+    max_date = datetime.datetime(year=2017, month=12, day=31)
 
     # a file that matches the ecar data_PV_Solar to home adresses (via an id)
     df = pd.read_csv(os.path.join('.', 'data', 'matching_bmw_to_address.csv'), sep=";")
