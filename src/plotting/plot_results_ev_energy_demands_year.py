@@ -10,12 +10,13 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import seaborn as sns
 
-from src.methods.helpers import validate_data, get_user_id
+from src.methods.helpers import get_user_id, filter_good_users
 from src.methods.loading_and_preprocessing import load_car_data
-
+import warnings
 
 def soc_to_kwh(soc_diff):
     soc_diff = -soc_diff
+    warnings.warn("Check if this is formula currently used in the paper")
     return 0.293 * soc_diff + 0.232 * math.sqrt(soc_diff)
 
 
@@ -24,9 +25,15 @@ if __name__ == "__main__":
     filepath = os.path.join(path_to_data_folder, 'car_is_at_home_table_UTC.csv')
     raw_bmw_filepath = os.path.join(path_to_data_folder, 'raw_bmw_data.csv')
 
-    data = load_car_data(filepath)
-    data = validate_data(data, 'vin', path_to_data_folder)
-    raw_bmw_data = pd.read_csv(raw_bmw_filepath, parse_dates=['timestamp'])
+    # data = load_car_data(filepath)
+    # data = validate_data(data, 'vin', path_to_data_folder)
+    # raw_bmw_data = pd.read_csv(raw_bmw_filepath, parse_dates=['timestamp'])
+    warnings.warn("I have updated your code because load_car_data, validate_data is not used anymore")
+
+    data = pd.read_csv(filepath)
+    data = filter_good_users(data, 'vin', path_to_data_folder)
+
+
 
     all_vehicles = set(data['vin'].unique())
 
