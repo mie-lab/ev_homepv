@@ -1,18 +1,9 @@
-import pickle
-
-
 import pandas as pd
-import matplotlib.pyplot as plt
-
-import copy
-from src.methods.scenarios_for_users import create_scenario_table
-from src.methods.PV_interface import get_PV_generated, get_PV_generated_from_pandas_row
+from src.methods.PV_interface import get_PV_generated
 from src.methods.helpers import soc2remainingCharge, remainingCharge2soc
-from src.methods.loading_and_preprocessing import load_car_data, preprocess_car_data, load_baseline_car_data
-from src.methods.compute_additional_columns import compute_additional_columns
 from src.ecar_data_preprocessing import export_baseline_data
 from src.db_login import DSN
-from src.table_information import home_table_info, ecar_table_info, ecarid_athome_table_info
+from src.table_information import ecar_table_info, ecarid_athome_table_info
 
 import datetime
 import os
@@ -38,7 +29,6 @@ def test_solar_model_UTC():
     assert pvgen  > 0, str(pvgen)
 
 def test_partialy_covered_pvbands():
-    # sunrise data https://galupki.de/kalender/sunmoon.php?jahrestabelle=HTML600&mobil=true&jahr=2017&monat=1&ort=Bonn&lon=7.1&lat=50.733
 
     vin = '00d98da128fd56261384c5a43da99ecf'
 

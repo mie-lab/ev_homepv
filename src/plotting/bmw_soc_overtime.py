@@ -19,7 +19,7 @@ from sqlalchemy import create_engine
 
 engine = create_engine('postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(**DSN))
 
-file_out = os.path.join("..", "data", "bmw_soc_overtime_data.csv")
+file_out = os.path.join("..", "data", "output", "bmw_soc_overtime_data.csv")
 figure_out = os.path.join("..", "plots", "bmw_soc_overtime.png")
 
 vin = '00008fac46c33e9da643170fccb388da'
