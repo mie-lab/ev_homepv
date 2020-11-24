@@ -24,7 +24,7 @@ def unpack_file(filename):
 
 class PVModel:
 
-    def __init__(self, user_id, path_to_data_folder):
+    def __init__(self, user_id, path_to_data_folder=os.path.join('.', 'data')):
 
         # with gzip.GzipFile(os.path.join("data_PV_Solar", "solar_rad_{}.json.gz".format(user_id)), 'r') as f:
         #    self.data_PV_Solar = json.loads(f.read()))
@@ -39,6 +39,7 @@ class PVModel:
         with open(filepath, 'r') as f:
             self.data = json.loads(f.read())
             self.user_id = user_id
+            self.area = self.data['area']
 
     @staticmethod
     def _get_band(dt):
@@ -47,7 +48,6 @@ class PVModel:
         """
 
         delta = dt - datetime.datetime(2017, 1, 1, 0, 0)
-
         half_hours = int(delta.total_seconds() / 60.0 / 30.0)
 
         return half_hours + 1

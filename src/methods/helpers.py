@@ -7,6 +7,7 @@ import datetime
 ureg = pint.UnitRegistry()
 
 def soc2remainingCharge(soc):
+    "calculates amount of energy that is missing in the car battery"
     charge = 0.293 * (100.0 - soc) + 0.232 * np.sqrt(100.0 - soc)  # formula to calc charge from soc
     assert charge >= 0.0
     # return charge * ureg.kilowatthour

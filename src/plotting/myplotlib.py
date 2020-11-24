@@ -129,7 +129,7 @@ def set_rcparams(journal):
                                 # https://tex.stackexchange.com/questions/207060/siunitx-celsius-font
                                 r'\sisetup{math-celsius = {}^{\circ}\kern-\scriptspace C}',
                                 r'\AtBeginDocument{\DeclareSIUnit{\watthour}{Wh}}'],
-        'text.latex.unicode': True,
+        # 'text.latex.unicode': True,
         'font.family': 'sans-serif',
         'font.sans-serif': journal_config[journal][FONT],
         'grid.linestyle': ':',
