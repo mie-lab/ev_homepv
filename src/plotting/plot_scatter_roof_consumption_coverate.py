@@ -65,6 +65,15 @@ def add_roof_area(df):
         pv = PVModel(user_id, area_factor=area_factor)
         df.loc[vin, 'area'] = pv.area
         df.loc[vin, 'user'] = int(user_id)
+        df.loc[vin, 'max_kW'] = pv.max_W/1000
+        
+        pvdict = pv.data['PVMODEL_SPV170']
+        to_pop_list = ['year_Wh_dc', 'year_Wh_ac', 'year_inv_eff', 'max_W']
+        for to_pop in to_pop_list:
+            pvdict.pop(to_pop)
+        df.loc[vin, 'max_gen_kw'] = max(list(pvdict.values()))*2/1000 * area_factor
+        
+        # print(pv.max_W/1000, max(list(pv.data['PVMODEL_SPV170'].values()))/2/1000)
 
 def return_ols_values(x, y):
     xx = sm.add_constant(x, prepend=False)
@@ -115,14 +124,27 @@ if __name__ == '__main__':
     # plt.scatter(df['total_demand'], df['scenario1'], s=df['area'])
     # plt.scatter(df['total_demand'], df['scenario2'], s=df['area'])
     # plt.scatter(df['total_demand'], df['scenario3'], s=df['area'])
-    plt.subplots()
-    plt.scatter(df['area'], df['baseline'])
-    plt.scatter(df['area'], df['scenario1'])
-    plt.scatter(df['area'], df['scenario2'])
-    plt.scatter(df['area'], df['scenario3'])
-    plt.xlabel("Roof area")
-    plt.ylabel("coverage")
+    # plt.subplots()
+    # plt.scatter(df['area'], df['baseline'])
+    # plt.scatter(df['area'], df['scenario1'])
+    # plt.scatter(df['area'], df['scenario2'])
+    # plt.scatter(df['area'], df['scenario3'])
+    # plt.xlabel("Roof area")
+    # plt.ylabel("coverage")
     
     
+
+### hist of kwp distribution
+# https://de.enfsolar.com/pv/panel-datasheet/crystalline/36658
+cell_area_m2 = 156/1000 * 156/1000
+kwp_per_cell = (170/36)/1000
+kwpm2_cell = kwp_per_cell / cell_area_m2
+
+df['kwp_cell'] = df['area'] * kwpm2_cell
+# plt.figure()
+
+
+# plt.hist(df['max_W']/1000, bins=20)
+
 
      

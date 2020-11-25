@@ -47,6 +47,7 @@ class PVModel:
             self.data = json.loads(f.read())
             self.user_id = user_id
             self.area = self.data['area'] * area_factor
+            self.max_W = self.data['PVMODEL_SPV170']['max_W'] * area_factor
 
 
 
