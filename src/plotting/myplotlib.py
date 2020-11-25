@@ -2,6 +2,20 @@
 Created on Mar 27, 2018
 
 @author: rene
+
+Install list:
+- tex (e.g, https://miktex.org/download)
+- PERL https://www.activestate.com/products/perl/downloads/
+- Ghostscript: https://www.ghostscript.com/download/gsdnld.html
+- imagemagick: https://imagemagick.org/script/download.php#windows
+
+
+Important for windows: Add the following executables to system PATH
+- latex.exe
+- dvipng.exe (Part of miktex: e.g., "[your user]\AppData\Local\Programs\MiKTeX\miktex\bin\x64\dvipng.exe"
+- gswin64.exe
+- imagemagick (automatically during installation)
+- PERL (automatically during installation)
 '''
 
 import os
@@ -17,7 +31,6 @@ import seaborn as sns
 from pint.registry import UnitRegistry
 
 ureg = UnitRegistry()
-
 
 class Journal(Enum):
     SPRINGER = "SPRINGER"
@@ -121,15 +134,16 @@ def set_rcparams(journal):
         'ytick.labelsize': journal_config[journal][FONT_SIZE],
         'grid.linewidth': 0.8,
         'text.usetex': True,
-        'text.latex.preamble': [r'\usepackage{siunitx}'
+        # https://stackoverflow.com/questions/63887179/python-new-fontmanager
+        'text.latex.preamble': " ". join([r'\usepackage{siunitx}'
                                 r'\usepackage{helvet}',
                                 r'\usepackage[EULERGREEK]{sansmath}',
                                 r'\sansmath',
                                 r'\sisetup{detect-all}',
                                 # https://tex.stackexchange.com/questions/207060/siunitx-celsius-font
                                 r'\sisetup{math-celsius = {}^{\circ}\kern-\scriptspace C}',
-                                r'\AtBeginDocument{\DeclareSIUnit{\watthour}{Wh}}'],
-        # 'text.latex.unicode': True,
+                                r'\AtBeginDocument{\DeclareSIUnit{\watthour}{Wh}}']),
+        # 'text.latex.unicode': True, # https://stackoverflow.com/questions/53157355/what-replaces-text-latex-unicode
         'font.family': 'sans-serif',
         'font.sans-serif': journal_config[journal][FONT],
         'grid.linestyle': ':',
@@ -204,17 +218,21 @@ def save_figure(outpath, dpi=600, bbox_extra_artists=()):
                     outpath.replace('.png', '.pdf'),
                     outpath.replace('.png', '-crop.pdf')])
     # Crop png
-    subprocess.run(["convert",
+
+
+    subprocess.run(["magick",
                     outpath,
                     "-flatten",
                     "-fuzz",
                     "1%",
                     "-trim",
-                    "+repage",
                     outpath.replace('.png', '-crop.png')])
 
-    subprocess.run(["convert",
+    subprocess.run(["magick",
                     outpath.replace('.png', '-transparent.png'),
+                    '-background',
+                    'none',
+                    "-flatten",
                     "-fuzz",
                     "1%",
                     "-trim",
