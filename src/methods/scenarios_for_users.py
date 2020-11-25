@@ -458,15 +458,21 @@ def create_scenario_table(data_baseline, data, battery_capacity, battery_power, 
 
     table = pd.concat((baseline_coverage, scenario1_coverage, scenario2_coverage, scenario3_coverage), axis=1)
 
-    # write results
-    print("write scenario results")
-    baseline_results.sort_values(by=['vin', 'start']).to_csv(os.path.join(path_to_data_folder, 'output', 'results_baseline.csv'), index=False)
-    scenario1_results.sort_values(by=['vin', 'start']).to_csv(os.path.join(path_to_data_folder, 'output', 'results_scenario1.csv'), index=False)
-    scenario2_results.sort_values(by=['vin', 'start']).to_csv(os.path.join(path_to_data_folder, 'output', 'results_scenario2.csv'), index=False)
-    scenario3_results.sort_values(by=['vin', 'start']).to_csv(os.path.join(path_to_data_folder, 'output', 'results_scenario3.csv'), index=False)
+    results = {'table': table,
+               'baseline': baseline_results.sort_values(by=['vin', 'start']),
+               'scenario1': scenario1_results.sort_values(by=['vin', 'start']),
+               'scenario2': scenario2_results.sort_values(by=['vin', 'start']),
+               'scenario3': scenario3_results.sort_values(by=['vin', 'start'])}
+
+    # # write results
+    # print("write scenario results")
+    # baseline_results.sort_values(by=['vin', 'start']).to_csv(os.path.join(path_to_data_folder, 'output', 'results_baseline.csv'), index=False)
+    # scenario1_results.sort_values(by=['vin', 'start']).to_csv(os.path.join(path_to_data_folder, 'output', 'results_scenario1.csv'), index=False)
+    # scenario2_results.sort_values(by=['vin', 'start']).to_csv(os.path.join(path_to_data_folder, 'output', 'results_scenario2.csv'), index=False)
+    # scenario3_results.sort_values(by=['vin', 'start']).to_csv(os.path.join(path_to_data_folder, 'output', 'results_scenario3.csv'), index=False)
 
     # print(f"table: {table}")
     # print(np.array(scenario_3_list) >= np.array(scenario_1_list))
     # assert np.all(np.array(scenario_3_list) >= np.array(scenario_1_list) - 0.000001)
 
-    return table
+    return results

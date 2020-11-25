@@ -40,7 +40,7 @@ def filter_good_users(data_raw, attr='vin', path_to_data_folder=os.path.join('.'
 
     filepath = os.path.join(path_to_data_folder,
                             "manual_validation.csv")
-    validation = pd.read_csv(filepath, sep=';')
+    validation = pd.read_csv(filepath, sep=';', encoding='latin-1')
 
     matching_dict = get_id_matching_dict(os.path.join(path_to_data_folder,
                                                       "matching_bmw_to_address.csv"))

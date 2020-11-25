@@ -93,7 +93,23 @@ if __name__ == '__main__':
     # validate that both datasets have exactly the same users
     check_user_plausibilty(data_baseline, data)
 
-    table = create_scenario_table(data_baseline, data, battery_capacity,
+    results = create_scenario_table(data_baseline, data, battery_capacity,
                                   battery_charging_power, max_power_kw, path_to_data_folder)
+
+    table = results['table']
     table.to_csv(os.path.join('data', 'output', 'coverage_by_scenario.csv'))
+
+    # # unpack & write results
+    # print("write scenario results")
+    baseline_results = results['baseline']
+    scenario1_results = results['scenario1']
+    scenario2_results = results['scenario2']
+    scenario3_results = results['scenario3']
+
+    baseline_results.to_csv(os.path.join(path_to_data_folder, 'output', 'results_baseline.csv'), index=False)
+    scenario1_results.to_csv(os.path.join(path_to_data_folder, 'output', 'results_scenario1.csv'), index=False)
+    scenario2_results.to_csv(os.path.join(path_to_data_folder, 'output', 'results_scenario2.csv'), index=False)
+    scenario3_results.to_csv(os.path.join(path_to_data_folder, 'output', 'results_scenario3.csv'), index=False)
+
+
 
