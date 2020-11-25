@@ -20,7 +20,7 @@ def filter_temporal_extent(data, t_start=datetime.datetime.strptime('2017-02-01T
 
     return data.loc[filter_boolean].copy()
 
-def filter_good_users(data_raw, attr='vin', path_to_data_folder=os.path.join('.', 'data')):
+def filter_good_users(data_raw, attr='vin', path_to_data_folder=os.path.join('.', 'data'), include_multifamiliy_homes=True):
     """
     This function filters good users.
     We exclude:
@@ -34,7 +34,9 @@ def filter_good_users(data_raw, attr='vin', path_to_data_folder=os.path.join('.'
     vins_with_zero_demand = ['0007f9c8534b7924352bed2b9842b1fc',
                              '003d3821dfaabc96fa1710c2128aeb62']
     vins_only_in_baseline = ['0072a451141128e2b75f66a1a34b7c67',
-                             'a8efc1cea1e62b7b4ae65e19878edbcf']
+                             'a8efc1cea1e62b7b4ae65e19878edbcf',
+                             '080d43fa4167b4667785654225db90a4',
+                             '0000c89a13315671408c619ede471b42']
 
     other_bad_vins = vins_with_zero_demand + vins_only_in_baseline
 
@@ -47,7 +49,11 @@ def filter_good_users(data_raw, attr='vin', path_to_data_folder=os.path.join('.'
 
     # only keep ids of users that live in a single home (validation['EFH'] == 1)
     # and were we were able to correctly recognize the roof area (validation['Brauchbar'] == 1)
-    good_userids_ix = (validation['Brauchbar'] == 1) & (validation['EFH'] == 1)
+    if include_multifamiliy_homes:
+        good_userids_ix = (((validation['Brauchbar'] == 1) & (validation['EFH'] == 1)) |
+                          ((validation['Brauchbar'] == 1) & (~validation['reduction_factor'].isna() )))
+    else:
+        good_userids_ix = (validation['Brauchbar'] == 1) & (validation['EFH'] == 1)
     good_userids = validation.loc[good_userids_ix, 'ID']
 
     # transform user_id to vin

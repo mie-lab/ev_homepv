@@ -127,7 +127,7 @@ if __name__ == '__main__':
     bbox_extra_artists = [fig,  leg]
     save_figure(os.path.join('plots', 'co2_plot',
                              'plot_average_co2_over_year.png'),
-                bbox_extra_artists=bbox_extra_artists,  dpi=100)
+                bbox_extra_artists=bbox_extra_artists)
     plt.close(fig)         
     
     

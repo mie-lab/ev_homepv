@@ -48,7 +48,6 @@ def baseline(data_baseline_raw):
         user_data = user_data.sort_values(by=['start'])
 
         # user_data.to_csv("debug_user_data_baseline.csv")
-
         user_data_ishome = user_data[user_data['is_home']]
 
         total_charged = sum(user_data_ishome['charged_from_pv'])

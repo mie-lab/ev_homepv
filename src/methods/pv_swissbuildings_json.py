@@ -24,7 +24,12 @@ def unpack_file(filename):
 
 class PVModel:
 
-    def __init__(self, user_id, path_to_data_folder=os.path.join('.', 'data')):
+    def __init__(self, user_id, path_to_data_folder=os.path.join('.', 'data'), area_factor=1):
+
+        """Area factor is factor that reduced the power because the roof was recognized as too big.
+        E.g., if the person is living in a house for two families, the area factor should be 0.5 so that only half the
+        power is returned in the end.
+        """
 
         # with gzip.GzipFile(os.path.join("data_PV_Solar", "solar_rad_{}.json.gz".format(user_id)), 'r') as f:
         #    self.data_PV_Solar = json.loads(f.read()))
@@ -36,10 +41,15 @@ class PVModel:
         if not os.path.isfile(filepath):
             unpack_file(filepath + '.gz')
 
+        self.area_factor = area_factor
+
         with open(filepath, 'r') as f:
             self.data = json.loads(f.read())
             self.user_id = user_id
-            self.area = self.data['area']
+            self.area = self.data['area'] * area_factor
+
+
+
 
     @staticmethod
     def _get_band(dt):
@@ -125,13 +135,14 @@ class PVModel:
             if band_key not in self.data[scenario]:
                 _tot_Wh = 0.0
             else:
-                _tot_Wh = float(self.data[scenario][band_key])
+                _tot_Wh = float(self.data[scenario][band_key]) * self.area_factor
 
             # take care of partially covered start and end band
             if i == 0:
                 _tot_Wh = _tot_Wh * percentage_in_start_band
             if i == last_iter:
                 _tot_Wh = _tot_Wh * percentage_in_end_band
+
 
             # include max limit here
             if max_power_kw is not None:

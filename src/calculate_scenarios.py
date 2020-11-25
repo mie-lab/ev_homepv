@@ -33,6 +33,7 @@ def get_cached_csv(filepath, data_raw, max_power_kw=11):
         data['end'] = pd.to_datetime(data['end'])
 
         get_PV_generated_from_pandas_row_partial = partial(get_PV_generated_from_pandas_row, max_power_kw=max_power_kw)
+        data['generated_by_pv'] = list(map(get_PV_generated_from_pandas_row_partial, data.iterrows())) # single core for debugging
         with Pool(8) as pool:
             data['generated_by_pv'] = pool.map(get_PV_generated_from_pandas_row_partial, data.iterrows())
             pool.close()
@@ -50,7 +51,8 @@ def check_user_plausibilty(baseline_data, data):
     vins_data = data['vin'].unique()
 
     for ix, vin_b in enumerate(vins_baseline):
-        assert vin_b == vins_data[ix]
+        assert vin_b == vins_data[ix], f"only in data: {set(vins_data) - set(vins_baseline)}," \
+                                       f" only in baseline {set(vins_baseline) - set(vins_data)}"
 
     return True
 

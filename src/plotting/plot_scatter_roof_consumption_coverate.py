@@ -15,7 +15,7 @@ import datetime
 import matplotlib.dates as mdates
 import matplotlib.patches as mpatches
 from src.methods.helpers import soc2remainingCharge
-from src.methods.PV_interface import get_PV_generated
+from src.methods.PV_interface import get_PV_generated, get_area_factor_for_user
 import pandas as pd
 import seaborn as sns
 from src.plotting.myplotlib import init_figure, Columnes, Journal, save_figure
@@ -60,8 +60,9 @@ def add_roof_area(df):
     all_vins = df.index.tolist()
     for vin in all_vins:
         user_id = get_user_id(vin)
+        area_factor = get_area_factor_for_user(user_id)
         
-        pv = PVModel(user_id)
+        pv = PVModel(user_id, area_factor=area_factor)
         df.loc[vin, 'area'] = pv.area
         df.loc[vin, 'user'] = int(user_id)
 
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     # plt.scatter(df['total_demand'], df['scenario1'], s=df['area'])
     # plt.scatter(df['total_demand'], df['scenario2'], s=df['area'])
     # plt.scatter(df['total_demand'], df['scenario3'], s=df['area'])
-        
+    plt.subplots()
     plt.scatter(df['area'], df['baseline'])
     plt.scatter(df['area'], df['scenario1'])
     plt.scatter(df['area'], df['scenario2'])

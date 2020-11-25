@@ -6,7 +6,7 @@ import pint
 
 from src.methods.helpers import get_user_id
 from src.methods.pv_swissbuildings_json import PVModel
-
+import pandas as pd
 ureg = pint.UnitRegistry()
 
 # TODO
@@ -28,6 +28,15 @@ def get_PV_generated_from_pandas_row(ix_row, max_power_kw=11):
     except (ValueError, FileNotFoundError):
         return -1
 
+def get_area_factor_for_user(user_id, path_to_data_folder=os.path.join('.', 'data')):
+    filepath = os.path.join(path_to_data_folder,
+                            "manual_validation.csv")
+    validation = pd.read_csv(filepath, sep=';', encoding='latin-1')
+    validation['reduction_factor'] = validation['reduction_factor'].fillna(1)
+    validation.set_index('ID', inplace=True)
+    area_factor = 1 / validation.loc[int(user_id), 'reduction_factor']
+    return area_factor
+
 
 def get_PV_generated(start, end, house_ID, path_to_data_folder=os.path.join('.', 'data'), max_power_kw=None):
     # todo: efficiency. If we still have to take into account the efficiency it has to be done in the method
@@ -42,11 +51,15 @@ def get_PV_generated(start, end, house_ID, path_to_data_folder=os.path.join('.',
     assert end.year >= 2017
     if house_ID not in pv_cache:
         user_id = get_user_id(house_ID, path_to_data_folder)
+
+        # get area factor
+        area_factor = get_area_factor_for_user(user_id)
+
         if user_id is None:
             # this means we don't have a  house for this user
             raise ValueError("No vin - myway user_id matching available for {}".format(user_id))
 
-        pv = PVModel(str(user_id), path_to_data_folder)
+        pv = PVModel(str(user_id), path_to_data_folder, area_factor=area_factor)
         pv_cache[house_ID] = pv
 
     pv = pv_cache[house_ID]
