@@ -59,8 +59,9 @@ if __name__ == "__main__":
                 start_day = datetime.datetime(2017, 1, 1, 0, 0) + datetime.timedelta(days=day)
                 end_day = datetime.datetime(2017, 1, 1, 0, 0) + datetime.timedelta(days=day + 1)
                 avg_prod = wh_per_band[(start_day <= wh_per_band['timestamp']) & (wh_per_band['timestamp'] < end_day)]
-                avg_prod = avg_prod['wh_produced'].mean()
-                prod = 24 * 2 * avg_prod
+                # avg_prod = avg_prod['wh_produced'].mean()
+                # prod = 24 * 2 * avg_prod
+                prod = avg_prod['wh_produced'].sum()
                 data_to_plot.append({
                     'uid': user_id,
                     'day': start_day,
