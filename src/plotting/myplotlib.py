@@ -14,7 +14,7 @@ Important for windows: Add the following executables to system PATH
 - latex.exe
 - dvipng.exe (Part of miktex: e.g., "[your user]\AppData\Local\Programs\MiKTeX\miktex\bin\x64\dvipng.exe"
 - gswin64.exe
-- imagemagick (automatically during installation)
+- imagemagick (automatically during installation) or not...C:\Program Files\ImageMagick-7.0.10-Q16-HDRI
 - PERL (automatically during installation)
 '''
 

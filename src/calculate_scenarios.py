@@ -59,8 +59,8 @@ def check_user_plausibilty(baseline_data, data):
 
 if __name__ == '__main__':
 
-    battery_capacity = 5  # tesla power box.
-    battery_charging_power = 12 # Dauerbetrieb
+    battery_capacity = 13.5  # tesla power box.
+    battery_charging_power = 4.6 # Dauerbetrieb
     max_power_kw = 11
 
     path_to_data_folder = os.path.join('.', 'data')

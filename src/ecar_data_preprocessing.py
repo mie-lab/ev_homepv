@@ -520,6 +520,7 @@ def create_segmented_ecar_data(ecarid_athome_table_info, DSN):
     ecar_unique_timestamps['soc_start'] = ecardata_raw['soc'].groupby(by=ecardata_raw.index).mean()
     ecar_unique_timestamps['soc_end'] = ecar_unique_timestamps['soc_start'].shift(-1)
 
+    # delta soc is positiv for charging and negativ for consumption
     ecar_unique_timestamps['delta_soc'] = ecar_unique_timestamps['soc_end'] - ecar_unique_timestamps['soc_start']
 
     # delete rows where the shift does not make sense because it where different users. This is the
@@ -583,17 +584,23 @@ def set_is_home_flag(ecar_unique_timestamps, ecardata_raw):
     intersecting_ix = ecar_unique_timestamps.index.intersection(df_fahrt_home_start_TRUE.index)
     ecar_unique_timestamps.loc[intersecting_ix, 'is_home'] = False
 
-    # create an id for every segment where a car is continously at home or not at home
+    # create an id for every segment where a car is continuously at home or not at home
     ecar_unique_timestamps['segment_id'] = ecar_unique_timestamps['is_home'].astype('int').diff().abs()
     ecar_unique_timestamps['segment_id'].fillna(0, inplace=True)
     ecar_unique_timestamps['segment_id'] = ecar_unique_timestamps['segment_id'].cumsum()
 
-    # create an extra column with only the negativ power consumption
+    # create an extra column with only the negative power consumption
     neg_con = ecar_unique_timestamps['delta_soc'] < 0
 
     ecar_unique_timestamps['only_consumption'] = 0
+    ecar_unique_timestamps['only_charging'] = 0
+
     ecar_unique_timestamps.loc[neg_con, 'only_consumption'] = \
         ecar_unique_timestamps.loc[neg_con, 'delta_soc']
+    ecar_unique_timestamps.loc[~neg_con, 'only_charging'] = \
+        ecar_unique_timestamps.loc[~neg_con, 'delta_soc']
+
+
 
     return ecar_unique_timestamps
 
@@ -623,7 +630,7 @@ def aggregate_home_nothome_segments(ecar_unique_timestamps):
     ecar_unique_agg = pd.concat([df_unique_agg_first, df_unique_agg_last], sort=False, axis=1)
 
     ecar_unique_agg['total_segment_consumption'] = ecar_unique_grouper['only_consumption'].sum()
-
+    ecar_unique_agg['total_segment_charging'] = ecar_unique_grouper['only_charging'].sum()
     #    #debug
     #    ecar_unique_agg['all_soc_start'] = ecar_unique_grouper['soc_start'].apply(list)
     #    ecar_unique_agg['all_soc_end'] = ecar_unique_grouper['soc_end'].apply(list)

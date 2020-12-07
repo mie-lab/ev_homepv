@@ -120,19 +120,23 @@ if __name__ == '__main__':
     #     y = df[column_name].values.reshape(-1,1)
     #     return_ols_values(x, y)
         
-    # plt.scatter(df['total_demand'], df['baseline'], s=df['area'])
-    # plt.scatter(df['total_demand'], df['scenario1'], s=df['area'])
-    # plt.scatter(df['total_demand'], df['scenario2'], s=df['area'])
-    # plt.scatter(df['total_demand'], df['scenario3'], s=df['area'])
-    # plt.subplots()
-    # plt.scatter(df['area'], df['baseline'])
-    # plt.scatter(df['area'], df['scenario1'])
-    # plt.scatter(df['area'], df['scenario2'])
-    # plt.scatter(df['area'], df['scenario3'])
-    # plt.xlabel("Roof area")
-    # plt.ylabel("coverage")
+    plt.scatter(df['total_demand'], df['baseline'])
+    plt.scatter(df['total_demand'], df['scenario1'])
+    plt.scatter(df['total_demand_s2'], df['scenario2'])
+    plt.scatter(df['total_demand_s3'], df['scenario3'])
+    plt.xlabel("total demand")
+    plt.ylabel("coverage by PV [%]")
     
+    plt.figure()
+    plt.scatter(df['area'], df['baseline'])
+    plt.scatter(df['area'], df['scenario1'])
+    plt.scatter(df['area'], df['scenario2'])
+    plt.scatter(df['area'], df['scenario3'])
+    plt.xlabel("Roof area")
+    plt.ylabel("coverage by PV [%]")
     
+
+
 
 ### hist of kwp distribution
 # https://de.enfsolar.com/pv/panel-datasheet/crystalline/36658
@@ -141,10 +145,8 @@ kwp_per_cell = (170/36)/1000
 kwpm2_cell = kwp_per_cell / cell_area_m2
 
 df['kwp_cell'] = df['area'] * kwpm2_cell
-# plt.figure()
-
-
-# plt.hist(df['max_W']/1000, bins=20)
-
-
-     
+plt.figure()
+plt.hist(df['max_kW'], bins=20)
+plt.xlabel('kwp')
+plt.ylabel('user count')
+plt.savefig(os.path.join('plots', 'kwp_hist.pdf'))

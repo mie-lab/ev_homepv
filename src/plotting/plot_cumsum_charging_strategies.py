@@ -17,7 +17,7 @@ from src.methods.helpers import soc2remainingCharge
 from src.methods.PV_interface import get_PV_generated
 import pandas as pd
 import seaborn as sns
-from myplotlib import init_figure, Columnes, Journal, save_figure
+from src.plotting.myplotlib import init_figure, Columnes, Journal, save_figure
 import numpy as np
 
 def plot_cumsum_plot(baseline, scenario1, scenario2, scenario3):
@@ -80,15 +80,15 @@ if __name__ == '__main__':
     output_folder = os.path.join('.', 'data', 'output')
 
     baseline = pd.read_csv(os.path.join(output_folder, 'results_baseline.csv'))
-    baseline = parse_dates(baseline)
+    baseline = parse_dates(baseline).sort_values('start')
 
     scenario1 = pd.read_csv(os.path.join(output_folder, 'results_scenario1.csv'))
-    scenario1 = parse_dates(scenario1)
+    scenario1 = parse_dates(scenario1).sort_values('start')
 
     scenario2 = pd.read_csv(os.path.join(output_folder, 'results_scenario2.csv'))
-    scenario2 = parse_dates(scenario2)
+    scenario2 = parse_dates(scenario2).sort_values('start')
 
     scenario3 = pd.read_csv(os.path.join(output_folder, 'results_scenario3.csv'))
-    scenario3 = parse_dates(scenario3)
+    scenario3 = parse_dates(scenario3).sort_values('start')
 
     plot_cumsum_plot(baseline, scenario1, scenario2, scenario3)

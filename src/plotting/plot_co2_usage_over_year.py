@@ -40,10 +40,19 @@ import matplotlib.pyplot as plt
 plt.style.use('ggplot') # this was just used for the examples
 
 # data
-CO2_pv = 20/1000 # kg/kWh
+CO2_pv = 49.1/1000 # kg/kWh
 # for switzerland: Verbraucher-Strommix: 
 # https://www.bafu.admin.ch/bafu/de/home/themen/klima/klimawandel--fragen-und-antworten.html#-1202736887
-CO2_swissmix = 181.5/1000  # kg/kWh
+CO2_swissmix = 181.5/1000  # kg/kWh https://www.bafu.admin.ch/bafu/de/home/themen/klima/klimawandel--fragen-und-antworten.html#-1202736887
+# 485
+# 5000 charge cycles / 1 cycle per day = 13.6986301369863 years of lifetime
+# https://iea-pvps.org/key-topics/environmental-life-cycle-assessment-of-residential-pv-and-battery-storage-systems/
+# Emissions are 76.1 gco2/kwh
+# Prospective LCA of the production and EoL recycling of a novel type of Li-ion battery for electric vehicles
+bat_co2_kwh = 76.1
+bat_cap_kwh = 13.5
+bat_lifetime_weeks = 5000/365 * 52
+gCO2_storage_week = bat_cap_kwh * bat_co2_kwh / bat_lifetime_weeks
 
 
 def get_aggr_df(df):
@@ -84,7 +93,8 @@ if __name__ == '__main__':
     scenario3 = pd.read_csv(os.path.join(output_folder, 'results_scenario3.csv'))
     scenario3 = parse_dates(scenario3) 
     df_s3 = get_aggr_df(scenario3)
-    
+
+    df_s3['co2'] = df_s3['co2'] + gCO2_storage_week
     
     df_b['scenario'] = 'Baseline'
     df_s1['scenario'] = 'Scenario 1'

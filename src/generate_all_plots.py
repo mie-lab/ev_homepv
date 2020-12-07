@@ -2,6 +2,7 @@ import os
 from os.path import join as osp
 
 
+os.system(f'python ./src/plotting/plot_histogram_overallcoverage.py')
 os.system(f'python ./src/plotting/plot_power_factor.py')
 os.system(f'python ./src/plotting/plot_cumsum_charging_strategies.py')
 os.system(f'python ./src/plotting/plot_co2_usage_over_year.py')

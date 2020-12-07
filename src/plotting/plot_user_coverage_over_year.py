@@ -122,18 +122,24 @@ if __name__ == '__main__':
                             journal=journal, sharex=True, sharey=True)
     # fig, axs = plt.subplots(2,2)
 
+    plt_scatter = False
+
     title_list = ['Baseline', 'Scenario 1', 'Scenario 2', 'Scenario 3']
     for ix, data in enumerate(data_list):
         ax = axs[ix//2, ix%2]
         t, y = reshape_for_quantile_plot(data)
-        ax = tsplot(t, y, n=1, percentile_min=5, percentile_max=95, plot_median=True, ax=ax, plot_scatter=True, color='g', line_color='navy', alpha=0.3)
+        ax = tsplot(t, y, n=1, percentile_min=5, percentile_max=95, plot_median=True, ax=ax, plot_scatter=plt_scatter, color='g', line_color='navy', alpha=0.3)
         ax = tsplot(t, y, n=1, percentile_min=25, percentile_max=75, ax=ax,  plot_median=False,  color='g', line_color='navy', alpha=0.5)
         
         ax.set_xticks(ax.get_xticks()[::2]) # skip every second tick
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
         # ax.xaxis.set_minor_formatter(mdates.DateFormatter('%b'))
         ax.set_title(title_list[ix])
-    
+        ax.grid(b=True, which='both')
+
+    # set minor ticks for grid lines
+    ax.set_yticks([0, 25, 50, 75, 100], minor=True)
+
     # labels 
     # https://stackoverflow.com/questions/16150819/common-xlabel-ylabel-for-matplotlib-subplots
     fig.add_subplot(111, frameon=False)
@@ -141,19 +147,30 @@ if __name__ == '__main__':
     plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
     plt.xlabel("Time of tracking aggregated by week", labelpad=15)
     plt.ylabel("Percentage of energy demand covered by PV", labelpad=20)
-
+    plt.grid(b=False)
     # plt.ylabel('Energy demand covered by PV')
     # legend    
     handles, labels = ax.get_legend_handles_labels()
 
-    
-    leg = plt.figlegend(handles=handles, labels=labels, loc='upper left',
-                        ncol=2, frameon=False,
-                        bbox_to_anchor=(0.15, 0), labelspacing=0.1,
-                        columnspacing=0.1)
-    leg.legendHandles[1].set_alpha(1) # no alpha for scatter circle
-    # leg.legendHandles[1]._sizes = [500]
-    leg.legendHandles[1].set_sizes([200])
+    if plt_scatter:
+        leg = plt.figlegend(handles=handles, labels=labels, loc='upper left',
+                            ncol=2, frameon=False,
+                            bbox_to_anchor=(0.15, 0), labelspacing=0.1,
+                            columnspacing=0.1)
+        leg.legendHandles[1].set_alpha(1) # no alpha for scatter circle
+        # leg.legendHandles[1]._sizes = [500]
+        leg.legendHandles[1].set_sizes([200])
+    else:
+
+        leg = plt.figlegend(handles=handles, labels=labels, loc='upper left',
+                            ncol=3, frameon=False,
+                            bbox_to_anchor=(0.03, 0), labelspacing=0.1,
+                            columnspacing=1)
+        # leg.legendHandles[1].set_alpha(1) # no alpha for scatter circle
+        # leg.legendHandles[1]._sizes = [500]
+        # leg.legendHandles[1].set_sizes([200])
+
+
         
     bbox_extra_artists = [fig,  leg]
     
