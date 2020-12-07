@@ -8,11 +8,19 @@ ureg = pint.UnitRegistry()
 
 def soc2remainingCharge(soc):
     "calculates amount of energy that is missing in the car battery"
-    charge = 0.293 * (100.0 - soc) + 0.232 * np.sqrt(100.0 - soc)  # formula to calc charge from soc
+    # charge = 0.293 * (100.0 - soc) + 0.232 * np.sqrt(100.0 - soc)  # formula to calc charge from soc
+    charge = deltasoc2tocharge(100-soc)
     assert charge >= 0.0
     # return charge * ureg.kilowatthour
     return charge
 
+def deltasoc2tocharge(delta_soc):
+    "returns energy for a given difference in state of charge"
+
+    charge = 0.293 * (delta_soc) + 0.232 * np.sqrt(delta_soc)  # formula to calc charge from soc
+    assert charge >= 0.0
+    # return charge * ureg.kilowatthour
+    return charge
 
 def remainingCharge2soc(charge):
     # wolfram alpha magic

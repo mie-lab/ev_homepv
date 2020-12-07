@@ -224,7 +224,7 @@ def scenario_2(data_raw):
         coverage = 1 - (total_charged_from_outside / total_demand)
         assert 0 <= coverage <= 1
 
-        coverage_all.append((user, coverage))
+        coverage_all.append((user, coverage, total_demand))
         user_df_list.append(user_data)
 
 
@@ -393,7 +393,7 @@ def scenario_3(data_raw, battery_capacity, battery_power, max_power_kw, path_to_
         coverage = 1 - (total_charged_from_outside / total_demand)
         assert 0 <= coverage <= 1
 
-        coverage_all.append((user, coverage))
+        coverage_all.append((user, coverage, total_demand))
         user_df_list.append(user_data)
 
     all_user_data = pd.concat(user_df_list)
@@ -452,8 +452,8 @@ def create_scenario_table(data_baseline, data, battery_capacity, battery_power, 
     # transform to coverage information to single dataframe
     baseline_coverage = pd.DataFrame(baseline_coverage, columns=['vin', 'baseline', 'total_demand']).set_index('vin')
     scenario1_coverage = pd.DataFrame(scenario1_coverage, columns=['vin', 'scenario1']).set_index('vin')
-    scenario2_coverage = pd.DataFrame(scenario2_coverage, columns=['vin', 'scenario2']).set_index('vin')
-    scenario3_coverage = pd.DataFrame(scenario3_coverage, columns=['vin', 'scenario3']).set_index('vin')
+    scenario2_coverage = pd.DataFrame(scenario2_coverage, columns=['vin', 'scenario2', 'total_demand_s2']).set_index('vin')
+    scenario3_coverage = pd.DataFrame(scenario3_coverage, columns=['vin', 'scenario3', 'total_demand_s3']).set_index('vin')
 
     table = pd.concat((baseline_coverage, scenario1_coverage, scenario2_coverage, scenario3_coverage), axis=1)
 

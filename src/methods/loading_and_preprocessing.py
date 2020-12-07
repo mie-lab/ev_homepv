@@ -2,7 +2,7 @@ import copy
 import pandas as pd
 import os
 import datetime
-from src.methods.helpers import soc2remainingCharge
+from src.methods.helpers import soc2remainingCharge, deltasoc2tocharge
 import numpy as np
 
 def get_id_matching_dict(filepath_matching):
@@ -135,9 +135,13 @@ def compute_additional_columns(car_data, drop_debug_columns=False):
 
     car_data_copy = copy.deepcopy(car_data)
 
-    needed_by_car = [soc2remainingCharge(car_data_copy["soc_start"][car_data_copy.index[i]]) -
-                     soc2remainingCharge(car_data_copy["soc_end"][car_data_copy.index[i]])
-                     for i in range(len(car_data_copy.index))]
+    try:
+        needed_by_car = car_data_copy['total_segment_charging'].apply(deltasoc2tocharge)
+
+    except KeyError:
+        needed_by_car = [soc2remainingCharge(car_data_copy["soc_start"][car_data_copy.index[i]]) -
+                         soc2remainingCharge(car_data_copy["soc_end"][car_data_copy.index[i]])
+                         for i in range(len(car_data_copy.index))]
 
     needed_by_car = np.maximum(0, needed_by_car)
     assert (np.all(np.array(needed_by_car) >= 0))
