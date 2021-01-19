@@ -9,8 +9,8 @@ def get_id_matching_dict(filepath_matching):
     """Create a dict that has myway_ids as keys and
     vins as values"""
     matching = pd.read_csv(filepath_matching, sep=';')
-    myway_id = matching['BMW_userid']
-    vin = matching['BMW_vid']
+    myway_id = matching['user_id']
+    vin = matching['vin']
     return dict(zip(myway_id, vin))
 
 def filter_temporal_extent(data, t_start=datetime.datetime.strptime('2017-02-01T00:00:00', '%Y-%m-%dT%H:%M:%S'),
@@ -20,7 +20,8 @@ def filter_temporal_extent(data, t_start=datetime.datetime.strptime('2017-02-01T
 
     return data.loc[filter_boolean].copy()
 
-def filter_good_users(data_raw, attr='vin', path_to_data_folder=os.path.join('.', 'data'), include_multifamiliy_homes=True):
+def filter_good_users(data_raw, attr='vin', path_to_data_folder=os.path.join('.', 'data'),
+                      include_multifamiliy_homes=True):
     """
     This function filters good users.
     We exclude:
@@ -31,21 +32,33 @@ def filter_good_users(data_raw, attr='vin', path_to_data_folder=os.path.join('.'
     This function replaces validate_data
     """
     data = data_raw.copy()
-    vins_with_zero_demand = ['0007f9c8534b7924352bed2b9842b1fc',
-                             '003d3821dfaabc96fa1710c2128aeb62']
-    vins_only_in_baseline = ['0072a451141128e2b75f66a1a34b7c67',
-                             'a8efc1cea1e62b7b4ae65e19878edbcf',
-                             '080d43fa4167b4667785654225db90a4',
-                             '0000c89a13315671408c619ede471b42']
 
-    other_bad_vins = vins_with_zero_demand + vins_only_in_baseline
+    # select a.vin,  count(b.is_home) from ev_homepv.ecar_data as a, ev_homepv.ecarid_is_athome as b
+    # where a.id = b.bmw_id  and b.is_home group by a.vin order by count
+    vins_with_wrong_home = ['0007f9c8534b7924352bed2b9842b1fc',
+                            'e4aac45c1a674b721f2e3edf2b385fca',
+                            # 00e5e36b1cd864655a12882d763e9a64, # Home is ok but the user has low usage
+                            # 0eb363a4a1b5dce2751bc198d9188a82, # not in the data anyways
+                            # 'e0d8c66f3d54112243c037b06c2bac26', # not in the data anyways
+                            '003d3821dfaabc96fa1710c2128aeb62']
+
+    vins_with_too_big_houses = [
+                                '008941e8226d2fa31c16443b852a3e89',
+                                '00d98da128fd56261384c5a43da99ecf',
+                                '0f0e8871819e36a735fd115b6660ba72']
+
+    vins_only_in_baseline = ['08ef62af248b9208348ad293eab4f1a7']
+
+    other_bad_vins = vins_only_in_baseline + vins_with_too_big_houses + vins_with_wrong_home
 
     filepath = os.path.join(path_to_data_folder,
                             "manual_validation.csv")
     validation = pd.read_csv(filepath, sep=';', encoding='latin-1')
 
+
+
     matching_dict = get_id_matching_dict(os.path.join(path_to_data_folder,
-                                                      "matching_bmw_to_address.csv"))
+                                                      "vin_id_matching.csv"))
 
     # only keep ids of users that live in a single home (validation['EFH'] == 1)
     # and were we were able to correctly recognize the roof area (validation['Brauchbar'] == 1)
@@ -70,7 +83,7 @@ def load_and_prepare_scenario_raw_data(filepath, path_to_data_folder=os.path.joi
     """return baseline_data in (almost) the same format as the results from the scenarios
 
         do the following preprocessing steps for the baseline data
-            - load it (the function does already some user filtering
+            - load it
             - filter users based on manual validation table
             - transform timestamps to datetime objects
             - filter time to temporal extent used in paper
@@ -94,7 +107,7 @@ def load_and_prepare_baseline_data(filepath_baseline, path_to_data_folder=os.pat
     """return baseline_data in (almost) the same format as the results from the scenarios
 
         do the following preprocessing steps for the baseline data
-            - load it (the function does already some user filtering
+            - load it
             - filter users based on manual validation table
             - transform timestamps to datetime objects
             - rename columns
@@ -142,6 +155,7 @@ def compute_additional_columns(car_data, drop_debug_columns=False):
         needed_by_car = [soc2remainingCharge(car_data_copy["soc_start"][car_data_copy.index[i]]) -
                          soc2remainingCharge(car_data_copy["soc_end"][car_data_copy.index[i]])
                          for i in range(len(car_data_copy.index))]
+
 
     needed_by_car = np.maximum(0, needed_by_car)
     assert (np.all(np.array(needed_by_car) >= 0))

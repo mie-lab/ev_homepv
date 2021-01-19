@@ -13,18 +13,24 @@ ureg = pint.UnitRegistry()
 pv_efficency = 0.18
 # pv_efficency = 180
 
+import logging
 
 pv_cache = {}
 
 
-def get_PV_generated_from_pandas_row(ix_row, max_power_kw=11):
+def get_PV_generated_from_pandas_row(ix_row, pv_model, max_power_kw=11):
     """wrapper function for get_PV_generated that can be used with the
     df.iterrows() generator"""
+
+    # pv_model="PVMODEL_SPV170"
+    # pv_model is set without default to avoid errors
     ix, row = ix_row
     try:
-        return get_PV_generated(row['start'],
-                                row['end'],
-                                row['vin'], max_power_kw=max_power_kw)
+        return get_PV_generated(start=row['start'],
+                                end=row['end'],
+                                house_ID=row['vin'],
+                                pv_model=pv_model,
+                                max_power_kw=max_power_kw)
     except (ValueError, FileNotFoundError):
         return -1
 
@@ -38,7 +44,7 @@ def get_area_factor_for_user(user_id, path_to_data_folder=os.path.join('.', 'dat
     return area_factor
 
 
-def get_PV_generated(start, end, house_ID, path_to_data_folder=os.path.join('.', 'data'), max_power_kw=None):
+def get_PV_generated(start, end, house_ID, pv_model, path_to_data_folder=os.path.join('.', 'data'), max_power_kw=None):
     # todo: efficiency. If we still have to take into account the efficiency it has to be done in the method
     #  PVModel.get_solar_radiation() because otherwise the max_power_kw restriction would be too strong
     """
@@ -46,6 +52,12 @@ def get_PV_generated(start, end, house_ID, path_to_data_folder=os.path.join('.',
     end
     house_ID: vin
     """
+
+    # pv_model="PVMODEL_SPV170"
+    # pv_model is set without default to avoid errors
+
+    logging.debug("pv_model: ".format(pv_model))
+
 
     assert start.year >= 2017, "solar model is defined starting from Jan 2017"
     assert end.year >= 2017
@@ -59,16 +71,17 @@ def get_PV_generated(start, end, house_ID, path_to_data_folder=os.path.join('.',
             # this means we don't have a  house for this user
             raise ValueError("No vin - myway user_id matching available for {}".format(user_id))
 
-        pv = PVModel(str(user_id), path_to_data_folder, area_factor=area_factor)
+        pv = PVModel(str(user_id), scenario=pv_model, path_to_data_folder=path_to_data_folder,
+                     area_factor=area_factor)
         pv_cache[house_ID] = pv
 
     pv = pv_cache[house_ID]
     start_datetime = datetime.datetime.strptime(str(start), "%Y-%m-%d %H:%M:%S")
     end_datetime = datetime.datetime.strptime(str(end), "%Y-%m-%d %H:%M:%S")
 
-    generated_energy = pv.get_solar_radiation("PVMODEL_SPV170",
-                                              start_datetime,
-                                              end_datetime,
+    generated_energy = pv.get_solar_radiation(scenario=pv_model,
+                                              startts=start_datetime,
+                                              endts=end_datetime,
                                               max_power_kw=max_power_kw)
     generated_KWh = generated_energy / 1000
     return generated_KWh

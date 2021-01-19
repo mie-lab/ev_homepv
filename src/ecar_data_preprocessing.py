@@ -218,15 +218,20 @@ def fill_ecarid_is_athome_table(ecarid_athome_table_info, ecar_table_info,
         # because cars are often parked in a garage which impacts GPS accuracy 
 
         query = sql.SQL("""drop table if exists temp_bmwid_ishome;
-                CREATE TEMP TABLE temp_bmwid_ishome as 
-                SELECT DISTINCT ON(bmw_id) {ecar_table_name}.id as bmw_id, ST_DWithin({ecar_table_name}.{geom_field}::geography, 
+                CREATE temp TABLE temp_bmwid_ishome as 
+                SELECT DISTINCT ON(bmw_id) {ecar_table_name}.id as bmw_id, 
+                {ecar_table_name}.{geom_field} as bmw_geom,
+                {home_table_name}.geometry as home_geom,
+                {home_table_name}.vin as home_vin,
+                {ecar_table_name}.vin as ecar_vin,
+                 ST_DWithin({ecar_table_name}.{geom_field}::geography, 
                            {home_table_name}.geometry::geography, 500) as is_home
                 FROM {ecar_table_name}, {home_table_name}
                 WHERE {ecar_table_name}.vin = {home_table_name}.vin
                 AND {ecar_table_name}.{geom_field} is not null order by bmw_id;""").format(
             **{**home_table_info, **ecar_table_info, **start_end_dict})
         cur.execute(query)
-
+        conn.commit()
         # add/update the boolean is_home to bmwid_ishome table
         query = sql.SQL("""UPDATE {ecarid_athome_table_name} SET is_home = temp_bmwid_ishome.is_home
                     from temp_bmwid_ishome

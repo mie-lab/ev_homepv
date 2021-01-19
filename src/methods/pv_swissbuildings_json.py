@@ -24,7 +24,7 @@ def unpack_file(filename):
 
 class PVModel:
 
-    def __init__(self, user_id, path_to_data_folder=os.path.join('.', 'data'), area_factor=1):
+    def __init__(self, user_id, scenario, path_to_data_folder=os.path.join('.', 'data'), area_factor=1):
 
         """Area factor is factor that reduced the power because the roof was recognized as too big.
         E.g., if the person is living in a house for two families, the area factor should be 0.5 so that only half the
@@ -47,7 +47,7 @@ class PVModel:
             self.data = json.loads(f.read())
             self.user_id = user_id
             self.area = self.data['area'] * area_factor
-            self.max_W = self.data['PVMODEL_SPV170']['max_W'] * area_factor
+            self.max_W = self.data[scenario]['max_W'] * area_factor
 
 
 

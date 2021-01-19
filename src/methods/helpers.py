@@ -33,7 +33,19 @@ def remainingCharge2soc(charge):
     return soc
 
 
-def get_user_id(vid, path_to_data_folder=os.path.join('.', 'data')):
+def get_user_id(vin, path_to_data_folder=os.path.join('.', 'data')):
+    """Transforms vin to myway user id"""
+    # print(f"vid ID:{vid}")
+    filepath_to_table = os.path.join(path_to_data_folder, "vin_id_matching.csv")
+    data = pd.read_csv(filepath_to_table, sep=';')
+    user_id = data['user_id'].loc[data['vin'] == vin]
+
+    if len(user_id) == 0:
+        return None
+    return str(int(user_id.iloc[0]))
+
+
+def get_vin(user_id, path_to_data_folder=os.path.join('.', 'data')):
     """Transforms vin to myway user id"""
     # print(f"vid ID:{vid}")
     filepath_to_table = os.path.join(path_to_data_folder, "matching_bmw_to_address.csv")
@@ -42,20 +54,13 @@ def get_user_id(vid, path_to_data_folder=os.path.join('.', 'data')):
     relevant_columns = ['BMW_vid', 'BMW_userid']
     data = data[relevant_columns]
     # print(data_PV_Solar)
-    user_id = data['BMW_userid'].loc[data['BMW_vid'] == vid]
-    # print(house_ID)
-    # print(type(user_id))
-    """
-    if (len(user_id) ==1):
-        user_id = user_id[0]
-    else:
-        print(user_id.loc(0))
-        user_id = user_id[0][0]
-    """
+    vin = data['BMW_vid'].loc[data['BMW_userid'] == user_id]
+
     # print(user_id.iloc[0])
     # print(vid)
-    if len(user_id) == 0:
+    if len(vin) == 0:
         return None
-    return str(int(user_id.iloc[0]))
+    return vin.iloc[0]
+
 
 
