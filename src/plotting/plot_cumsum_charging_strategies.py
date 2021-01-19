@@ -77,7 +77,7 @@ def parse_dates(data_raw):
 
 
 if __name__ == '__main__':
-    output_folder = os.path.join('.', 'data', 'output')
+    output_folder = os.path.join('.', 'data', 'output', 'PVMODEL_SPV170')
 
     baseline = pd.read_csv(os.path.join(output_folder, 'results_baseline.csv'))
     baseline = parse_dates(baseline).sort_values('start')

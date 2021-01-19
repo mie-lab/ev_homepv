@@ -149,7 +149,8 @@ l3 = mpatches.Patch(color="#8da97c", alpha=0.3, label="Car is away")
 # print(get_PV_generated(dt_start, dt_end, vin))
 ax2 = ax.twinx()
 datelist = pd.date_range(dt_start, dt_end, freq='30T', name='timesteps').to_list()
-pv_list = [get_PV_generated(datelist[i], datelist[i+1], vin) for i in range(len(datelist) - 1)]
+pv_list = [get_PV_generated(start=datelist[i], end=datelist[i + 1], house_ID=vin, pv_model="PVMODEL_SPV170")
+           for i in range(len(datelist) - 1)]
 pvgen_handle = ax2.plot(datelist[:-1], pv_list, label='PV generation', linewidth=3)
 
 # ax2 = ax

@@ -22,7 +22,7 @@ import numpy as np
 from src.methods.helpers import get_user_id
 import statsmodels.api as sm
 import scipy 
-import logging 
+import logging
 
 def parse_dates(data_raw):
     data = data_raw.copy()
@@ -40,11 +40,13 @@ import matplotlib.pyplot as plt
 plt.style.use('ggplot') # this was just used for the examples
 
 # data
-CO2_pv = 49.1/1000 # kg/kWh
+CO2_pv = 53.6/1000 # kg/kWh
 # for switzerland: Verbraucher-Strommix: 
 # https://www.bafu.admin.ch/bafu/de/home/themen/klima/klimawandel--fragen-und-antworten.html#-1202736887
-CO2_swissmix = 181.5/1000  # kg/kWh https://www.bafu.admin.ch/bafu/de/home/themen/klima/klimawandel--fragen-und-antworten.html#-1202736887
-# 485
+# CO2_swissmix = 181.1/1000  # kg/kWh https://www.bafu.admin.ch/bafu/de/home/themen/klima/klimawandel--fragen-und-antworten.html#-1202736887
+CO2_swissmix = 401/1000 
+# 181.1 = schweiz
+# 401 = Germany
 # 5000 charge cycles / 1 cycle per day = 13.6986301369863 years of lifetime
 # https://iea-pvps.org/key-topics/environmental-life-cycle-assessment-of-residential-pv-and-battery-storage-systems/
 # Emissions are 76.1 gco2/kwh
@@ -54,6 +56,7 @@ bat_cap_kwh = 13.5
 bat_lifetime_weeks = 5000/365 * 52
 gCO2_storage_week = bat_cap_kwh * bat_co2_kwh / bat_lifetime_weeks
 
+fig_out = os.path.join('plots', 'co2_plot', 'plot_average_co2_over_year.png')
 
 def get_aggr_df(df):
     
@@ -76,7 +79,7 @@ def get_aggr_df(df):
 
 
 if __name__ == '__main__':
-    output_folder = os.path.join('.', 'data', 'output')
+    output_folder = os.path.join('.', 'data', 'output', 'PVMODEL_SPV170')
     
     baseline = pd.read_csv(os.path.join(output_folder, 'results_baseline.csv'))
     baseline = parse_dates(baseline)
@@ -135,11 +138,13 @@ if __name__ == '__main__':
     plt.ylabel(r"Emissions per Person in $\frac{\text{kg CO2 equivalent}}{\text{week}}$", labelpad=20)
         
     bbox_extra_artists = [fig,  leg]
-    save_figure(os.path.join('plots', 'co2_plot',
-                             'plot_average_co2_over_year.png'),
-                bbox_extra_artists=bbox_extra_artists)
+    save_figure(fig_out, bbox_extra_artists=bbox_extra_artists)
     plt.close(fig)         
     
+    
+    # calculate average Co2 savings per user
+    df_avco2 = df_all.groupby('scenario')['co2'].mean()
+    df_avco2  = df_avco2.Baseline - df_avco2 
     
 
     # data_list = [df_b, df_s1, df_s2, df_s3]

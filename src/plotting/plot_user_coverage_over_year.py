@@ -94,7 +94,7 @@ def tsplot(x, y, n=20, percentile_min=25, percentile_max=75, color='r', plot_mea
 
 
 if __name__ == '__main__':
-    output_folder = os.path.join('.', 'data', 'output')
+    output_folder = os.path.join('.', 'data', 'output', 'PVMODEL_SPV170')
     
     baseline = pd.read_csv(os.path.join(output_folder, 'results_baseline.csv'))
     baseline = parse_dates(baseline)

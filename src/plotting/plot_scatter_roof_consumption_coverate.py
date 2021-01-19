@@ -25,6 +25,7 @@ from src.methods.helpers import get_user_id
 import statsmodels.api as sm
 import scipy 
 import logging 
+import warnings
 
 def parse_dates(data_raw):
     data = data_raw.copy()
@@ -61,12 +62,13 @@ def add_roof_area(df):
     for vin in all_vins:
         user_id = get_user_id(vin)
         area_factor = get_area_factor_for_user(user_id)
-        
-        pv = PVModel(user_id, area_factor=area_factor)
+
+        warnings.warn("using fixed pv model")
+        pv = PVModel(user_id, area_factor=area_factor, scenario='PVMODEL_SPV170')
         df.loc[vin, 'area'] = pv.area
         df.loc[vin, 'user'] = int(user_id)
         df.loc[vin, 'max_kW'] = pv.max_W/1000
-        
+
         pvdict = pv.data['PVMODEL_SPV170']
         to_pop_list = ['year_Wh_dc', 'year_Wh_ac', 'year_inv_eff', 'max_W']
         for to_pop in to_pop_list:
@@ -95,20 +97,37 @@ def return_ols_values(x, y):
     
 
 if __name__ == '__main__':
-    
-    df = pd.read_csv(os.path.join('data', 'output', 'coverage_by_scenario.csv'))
+    output_folder = os.path.join('.', 'data', 'output', 'PVMODEL_SPV170')
+    df = pd.read_csv(os.path.join(output_folder, 'coverage_by_scenario.csv'))
+
     df.set_index('vin', inplace=True)
     df['area'] = 0
     df['user'] = 0
     add_roof_area(df) 
     
     column_names = ['baseline', 'scenario1', 'scenario2', 'scenario3']
+    demand_names = ['total_demand', 'total_demand', 'total_demand_s2', 'total_demand_s3']
     df[column_names] = df[column_names] * 100 # in %
     # df['total_demand'] = df['total_demand'] / 1000 # in MWh
     
-    for column_name in column_names:
+    cell_area_m2 = 156/1000 * 156/1000
+    kwp_per_cell = (170/36)/1000
+    kwpm2_cell = kwp_per_cell / cell_area_m2
+    
+    df['kwp_cell'] = df['area'] * kwpm2_cell
+    plt.figure()
+    plt.hist(df['max_kW'], bins=20)
+    plt.xlabel('kwp [kW]')
+    plt.ylabel('user count')
+    plt.tight_layout()
+    plt.savefig(os.path.join('plots', 'kwp_hist.pdf'))
+    plt.close()
+    
+    # regression analysis
+    for ix, column_name in enumerate(column_names):
         logging.debug("\t" + column_name)
-        x = df.loc[:, ['total_demand', 'area']].values.reshape(-1,2)
+        demand_col = demand_names[ix]
+        x = df.loc[:, [demand_col, 'max_kW']].values.reshape(-1,2)
         y = df[column_name].values.reshape(-1,1)
         return_ols_values(x, y)
         
@@ -120,33 +139,40 @@ if __name__ == '__main__':
     #     y = df[column_name].values.reshape(-1,1)
     #     return_ols_values(x, y)
         
+    ### hist of kwp distribution
+    # https://de.enfsolar.com/pv/panel-datasheet/crystalline/36658
+   
+    
     plt.scatter(df['total_demand'], df['baseline'])
     plt.scatter(df['total_demand'], df['scenario1'])
     plt.scatter(df['total_demand_s2'], df['scenario2'])
     plt.scatter(df['total_demand_s3'], df['scenario3'])
-    plt.xlabel("total demand")
-    plt.ylabel("coverage by PV [%]")
+    plt.xlabel("total demand [kWh]")
+    plt.ylabel("coverage by PV [\%]")
+    plt.tight_layout()
+    plt.savefig(os.path.join('plots', 'sensitivity_demand.pdf'))
+    plt.close()
+    
     
     plt.figure()
-    plt.scatter(df['area'], df['baseline'])
-    plt.scatter(df['area'], df['scenario1'])
-    plt.scatter(df['area'], df['scenario2'])
-    plt.scatter(df['area'], df['scenario3'])
-    plt.xlabel("Roof area")
-    plt.ylabel("coverage by PV [%]")
+    plt.scatter(df['max_kW'], df['baseline'])
+    plt.scatter(df['max_kW'], df['scenario1'])
+    plt.scatter(df['max_kW'], df['scenario2'])
+    plt.scatter(df['max_kW'], df['scenario3'])
+    plt.xlabel("KWp [kW]")
+    plt.ylabel("coverage by PV [\%]")
+    plt.tight_layout()
+    plt.savefig(os.path.join('plots', 'sensitivity_kwp.pdf'))
+    plt.close()
     
+    # plt.figure()
+    # plt.scatter(df['area'], df['baseline'])
+    # plt.scatter(df['area'], df['scenario1'])
+    # plt.scatter(df['area'], df['scenario2'])
+    # plt.scatter(df['area'], df['scenario3'])
+    # plt.xlabel("Roof area [m2]")
+    # plt.ylabel("coverage by PV [\%]")
+    # plt.tight_layout()
+    # plt.savefig(os.path.join('plots', 'sensitivity_roof.pdf'))
+    # plt.close()
 
-
-
-### hist of kwp distribution
-# https://de.enfsolar.com/pv/panel-datasheet/crystalline/36658
-cell_area_m2 = 156/1000 * 156/1000
-kwp_per_cell = (170/36)/1000
-kwpm2_cell = kwp_per_cell / cell_area_m2
-
-df['kwp_cell'] = df['area'] * kwpm2_cell
-plt.figure()
-plt.hist(df['max_kW'], bins=20)
-plt.xlabel('kwp')
-plt.ylabel('user count')
-plt.savefig(os.path.join('plots', 'kwp_hist.pdf'))

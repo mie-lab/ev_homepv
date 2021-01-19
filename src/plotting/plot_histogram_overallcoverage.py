@@ -34,8 +34,9 @@ def plot_hist(df, column_name, ax):
 if __name__ == '__main__':
 
     journal = Journal.POWERPOINT_A3
+    output_folder = os.path.join('.', 'data', 'output', 'PVMODEL_SPV170')
 
-    df = pd.read_csv(os.path.join('data', 'output', 'coverage_by_scenario.csv'))
+    df = pd.read_csv(os.path.join(output_folder, 'coverage_by_scenario.csv'))
     df = df*100
     column_names = ['baseline', 'scenario1', 'scenario2', 'scenario3']
     titles = ['Baseline', 'Scenario 1', 'Scenario 2', 'Scenario 3']

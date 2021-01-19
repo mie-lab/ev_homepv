@@ -124,7 +124,8 @@ def add_pvgen_on_second_axis(vin, t_start, t_end, ax,
     
     ax2 = ax.twinx()
     datelist = pd.date_range(t_start, t_end, freq='30T', name='timesteps').to_list()
-    pv_list = [get_PV_generated(datelist[i], datelist[i+1], vin) for i in range(len(datelist) - 1)]
+    pv_list = [get_PV_generated(start=datelist[i], end=datelist[i+1], house_ID=vin, pv_model="PVMODEL_SPV170")
+               for i in range(len(datelist) - 1)]
     pvgen_line_handle = ax2.plot(datelist[:-1], pv_list, label='PV generation', linewidth=3)
     
     ax2.set_ylabel(label_yax2)
