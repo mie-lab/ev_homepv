@@ -4,6 +4,7 @@ import os
 import datetime
 from src.methods.helpers import soc2remainingCharge, deltasoc2tocharge
 import numpy as np
+from src.constants import project_constants
 
 def get_id_matching_dict(filepath_matching):
     """Create a dict that has myway_ids as keys and
@@ -13,9 +14,19 @@ def get_id_matching_dict(filepath_matching):
     vin = matching['vin']
     return dict(zip(myway_id, vin))
 
-def filter_temporal_extent(data, t_start=datetime.datetime.strptime('2017-02-01T00:00:00', '%Y-%m-%dT%H:%M:%S'),
-                           t_end=datetime.datetime.strptime('2017-12-31T23:59:59', '%Y-%m-%dT%H:%M:%S')):
+def get_inverse_id_matching_dict(filepath_matching):
+    """Create a dict that has myway_ids as keys and
+    vins as values"""
+    matching = pd.read_csv(filepath_matching, sep=';')
+    myway_id = matching['user_id']
+    vin = matching['vin']
+    return dict(zip(vin, myway_id))
 
+def filter_temporal_extent(data):
+
+    t_start = project_constants['t_start']
+    t_end = project_constants['t_end']
+    # print(t_end)
     filter_boolean = ((data['start'] >= t_start) & (data['end'] < t_end))
 
     return data.loc[filter_boolean].copy()
@@ -41,6 +52,8 @@ def filter_good_users(data_raw, attr='vin', path_to_data_folder=os.path.join('.'
                             # 0eb363a4a1b5dce2751bc198d9188a82, # not in the data anyways
                             # 'e0d8c66f3d54112243c037b06c2bac26', # not in the data anyways
                             '003d3821dfaabc96fa1710c2128aeb62']
+
+    # 0656f4967b02fa467e7a85ea85b62cd1 # this one is also likely to have the wrong home
 
     vins_with_too_big_houses = [
                                 '008941e8226d2fa31c16443b852a3e89',

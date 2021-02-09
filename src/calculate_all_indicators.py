@@ -35,7 +35,7 @@ from src.table_information import home_table_info, ecar_table_info, ecarid_athom
 
 from src.methods.PV_interface import get_PV_generated_from_pandas_row
 from src.methods.loading_and_preprocessing import load_and_prepare_baseline_data, load_and_prepare_scenario_raw_data, \
-    compute_additional_columns
+    compute_additional_columns, get_id_matching_dict, get_inverse_id_matching_dict
 from src.methods.scenarios_for_users import create_scenario_table
 
 def check_user_plausibilty(baseline_data, data):
@@ -70,7 +70,11 @@ scenario2 = parse_dates(scenario2).sort_values('start')
 scenario3 = pd.read_csv(os.path.join(output_folder, 'results_scenario3.csv'))
 scenario3 = parse_dates(scenario3).sort_values('start')
 
+coverage_by_scenario = pd.read_csv(os.path.join(output_folder, 'coverage_by_scenario.csv'))
 
+# %%%%%%%%%%%%%%%%%%%%%%%%
+print("number of users in sc2 with >= 0.95 coverage is: {}".format(
+    coverage_by_scenario[coverage_by_scenario['scenario2'] >= 0.95].shape[0]))
 
 ########################### NB of users ###################################
 path_to_data_folder = os.path.join('.', 'data')
@@ -95,7 +99,7 @@ nb_of_users_final = users_final.shape
 
 print(10 * '%')
 print('Number of users indicators')
-print('\t final number of users: ')
+print('\t final number of users: {}'.format(nb_of_users_final))
 
 
 ######################charging in baseline ###############################################################
@@ -162,3 +166,27 @@ print('\t consumed energy total recorded by car {} MWh(not used)'.format(consume
 # verbrauch je 100km ca 15.3 kwh https://www.adac.de/rund-ums-fahrzeug/autokatalog/marken-modelle/bmw/bmw-i3/
 consumption_theoretical = nb_of_km_sum/100 * 15.3 / 1000 # in Mwh
 print('\t consumed energy total theretic estimation {} MWh(not used)'.format(consumption_theoretical))
+
+### final homes of users.
+filepath = os.path.join(path_to_data_folder,
+                            "manual_validation.csv")
+validation = pd.read_csv(filepath, sep=';', encoding='latin-1')
+
+
+
+inverse_matching_dict = get_inverse_id_matching_dict(os.path.join(path_to_data_folder,
+                                                  "vin_id_matching.csv"))
+matching_dict = get_id_matching_dict(os.path.join(path_to_data_folder,
+                                                  "vin_id_matching.csv"))
+users_final_ids = pd.Series(users_final).map(inverse_matching_dict)
+validation = validation.loc[validation['ID'].isin(users_final_ids)]
+
+print("EFH: {}".format(validation[validation['EFH'] == 1].shape[0]))
+print("ZFH: {}".format(validation[validation['ZFH'] == 1].shape[0]))
+print("MFH: {}".format(validation[validation['MFH'] == 1].shape[0]))
+# only keep ids of users that live in a single home (validation['EFH'] == 1)
+# and were we were able to correctly recognize the roof area (validation['Brauchbar'] == 1)
+good_userids_ix = (((validation['Brauchbar'] == 1) & (validation['EFH'] == 1)) |
+                  ((validation['Brauchbar'] == 1) & (~validation['reduction_factor'].isna() )))
+good_userids = validation.loc[good_userids_ix, 'ID']
+
