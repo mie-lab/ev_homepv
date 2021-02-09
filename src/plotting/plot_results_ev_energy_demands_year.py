@@ -15,7 +15,7 @@ import warnings
 import numpy as np
 from src.methods.loading_and_preprocessing import load_and_prepare_baseline_data, compute_additional_columns
 from src.calculate_scenarios import get_cached_csv
-
+from src.constants import project_constants
 def soc_to_kwh(soc_diff):
 
     return deltasoc2tocharge(-soc_diff)
@@ -106,19 +106,25 @@ if __name__ == "__main__":
 
     plt.sca(axes[0])
     sns.lineplot(data=data_to_plot, x="day", y="energy_required_kwh",
-                 linewidth=2, ax=axes[0], ci=95, estimator=np.median, err_kws={'alpha':0.4})
+                 linewidth=2, ax=axes[0], ci=95, err_kws={'alpha':0.4})
     axes[0].set_xlabel('Days in 2017 [d]')
     axes[0].set_ylabel('Energy Demand of EV per day [kWh]')
     axes[0].set_ylim([-2, 30])
+
+    t_start = project_constants['t_start']
+    t_end = project_constants['t_end']
     x_dates = pd.date_range(start=datetime.datetime(2017, 1, 1, 0, 0),
                             end=datetime.datetime(2017, 12, 31, 0, 0),
                             freq='M',) + datetime.timedelta(days=1)
+
     axes[0].set_xticks(x_dates[::2])
     axes[0].xaxis.set_major_formatter(mdates.DateFormatter('%b'))
 
     plt.sca(axes[1])
     sns.boxplot(x="dow", y="energy_required_kwh", data=data_to_plot, ax=axes[1],
-                flierprops={'alpha':.1, 'marker':'+'}, color='k')
+                flierprops={'alpha':.1, 'marker':'+'},
+                color='b'
+                )
     axes[1].set_xlabel('Weekdays')
     axes[1].set_ylabel('')
     # axes[1].set_ylabel('Energy Demand of EV [kWh]')
@@ -132,6 +138,6 @@ if __name__ == "__main__":
 
     plt.subplots_adjust(wspace=0.18)
 
-    save_figure(fig_out, dpi=30)
+    save_figure(fig_out)
 
     print(data_to_plot.groupby('dow').median())

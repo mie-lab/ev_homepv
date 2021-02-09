@@ -9,6 +9,9 @@ old
 __pycache__
 .idea
 jannik/pvmodel2/*
-
+pv_mobility_gwr/*
 
 data/data_PV_Solar/*.json
+/data/repair_id_matching/pv_mobility_gwr/
+/plots/zzz_all_pdfs/
+/src/plotting/plotting_old/

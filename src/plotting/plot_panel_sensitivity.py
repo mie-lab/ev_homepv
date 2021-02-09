@@ -28,7 +28,8 @@ all_pv_models = ["ONLY_SOLAR_PVSYSEFF_5",
      "ONLY_SOLAR_PVSYSEFF_21", "ONLY_SOLAR_PVSYSEFF_22", "ONLY_SOLAR_PVSYSEFF_23",
      "ONLY_SOLAR_PVSYSEFF_24", "ONLY_SOLAR_PVSYSEFF_25", "ONLY_SOLAR_PVSYSEFF_26",
      "ONLY_SOLAR_PVSYSEFF_27", "ONLY_SOLAR_PVSYSEFF_28", "ONLY_SOLAR_PVSYSEFF_29",
-     "ONLY_SOLAR_PVSYSEFF_100"]
+     # "ONLY_SOLAR_PVSYSEFF_100"
+                 ]
 
 df_all_list = []
 for pv_model_this in all_pv_models:
@@ -67,7 +68,8 @@ fig, ax = init_figure(nrows=1,
                       journal=journal, sharex=True, sharey=True)
 sns.lineplot(data=df_all_all, x="eff", y="coverage", hue="scenario",
                  linewidth=3, ax=ax)
-
+plt.ylabel("Average coverage [\%]",  labelpad=20)
+plt.xlabel("System efficiency [\%]",  labelpad=20)
 # legend stuff
 handles, labels = ax.get_legend_handles_labels()
 for handle in handles:

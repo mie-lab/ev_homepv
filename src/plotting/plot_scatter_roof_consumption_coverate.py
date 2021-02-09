@@ -77,7 +77,7 @@ def add_roof_area(df):
         
         # print(pv.max_W/1000, max(list(pv.data['PVMODEL_SPV170'].values()))/2/1000)
 
-def return_ols_values(x, y):
+def return_ols_values(x, y, scenario):
     xx = sm.add_constant(x, prepend=False)
     mod = sm.OLS(y, xx)
     res = mod.fit()
@@ -94,7 +94,20 @@ def return_ols_values(x, y):
     logging.debug('\t\t' + f'rsquared: {rsquared:.2f}')
 
     print(res.summary())
+
+    return {'scenario': scenario, 'Coef_D': params[0], 'p_D': pval[0], 'Coef_A': params[1],
+            'p_A': pval[1], 'R2': rsquared}
     
+
+def no_formatter(x):
+    return x
+
+def scientific_formatter(x):
+    return '%1.2E' % x
+
+def float_formatter(x):
+    return '%1.2F' % x
+
 
 if __name__ == '__main__':
     output_folder = os.path.join('.', 'data', 'output', 'PVMODEL_SPV170')
@@ -110,11 +123,11 @@ if __name__ == '__main__':
     df[column_names] = df[column_names] * 100 # in %
     # df['total_demand'] = df['total_demand'] / 1000 # in MWh
     
-    cell_area_m2 = 156/1000 * 156/1000
-    kwp_per_cell = (170/36)/1000
-    kwpm2_cell = kwp_per_cell / cell_area_m2
-    
-    df['kwp_cell'] = df['area'] * kwpm2_cell
+    # cell_area_m2 = 156/1000 * 156/1000
+    # kwp_per_cell = (170/36)/1000
+    # kwpm2_cell = kwp_per_cell / cell_area_m2
+    #
+    # df['kwp_cell'] = df['area'] * kwpm2_cell
     plt.figure()
     plt.hist(df['max_kW'], bins=20)
     plt.xlabel('kwp [kW]')
@@ -124,12 +137,23 @@ if __name__ == '__main__':
     plt.close()
     
     # regression analysis
+    results_dict_list = []
+    column_labels = ['Baseline', 'Scenario 1', 'Scenario 2', 'Scenario 3']
     for ix, column_name in enumerate(column_names):
         logging.debug("\t" + column_name)
         demand_col = demand_names[ix]
-        x = df.loc[:, [demand_col, 'max_kW']].values.reshape(-1,2)
-        y = df[column_name].values.reshape(-1,1)
-        return_ols_values(x, y)
+        x = df.loc[:, [demand_col, 'max_kW']].values.reshape(-1, 2)
+        y = df[column_name].values.reshape(-1, 1)
+        results_dict_list.append(return_ols_values(x, y, scenario=column_labels[ix]))
+
+    results_df = pd.DataFrame(results_dict_list)
+    results_df.set_index('scenario', inplace=True)
+    formatter_list = 4 * [scientific_formatter] + [float_formatter]
+
+    results_df.to_latex('table.tex', bold_rows=True, formatters=formatter_list)
+
+
+
         
         
     # logging.debug("area")
@@ -141,30 +165,40 @@ if __name__ == '__main__':
         
     ### hist of kwp distribution
     # https://de.enfsolar.com/pv/panel-datasheet/crystalline/36658
-   
-    
-    plt.scatter(df['total_demand'], df['baseline'])
-    plt.scatter(df['total_demand'], df['scenario1'])
-    plt.scatter(df['total_demand_s2'], df['scenario2'])
-    plt.scatter(df['total_demand_s3'], df['scenario3'])
-    plt.xlabel("total demand [kWh]")
-    plt.ylabel("coverage by PV [\%]")
-    plt.tight_layout()
-    plt.savefig(os.path.join('plots', 'sensitivity_demand.pdf'))
-    plt.close()
-    
-    
-    plt.figure()
-    plt.scatter(df['max_kW'], df['baseline'])
-    plt.scatter(df['max_kW'], df['scenario1'])
-    plt.scatter(df['max_kW'], df['scenario2'])
-    plt.scatter(df['max_kW'], df['scenario3'])
-    plt.xlabel("KWp [kW]")
-    plt.ylabel("coverage by PV [\%]")
-    plt.tight_layout()
-    plt.savefig(os.path.join('plots', 'sensitivity_kwp.pdf'))
-    plt.close()
-    
+
+    journal = Journal.POWERPOINT_A3
+    fig, axs = init_figure(nrows=1,
+                          ncols=2,
+                          columnes=Columnes.ONE,
+                          journal=journal,
+                           sharey=True)
+
+    ax0 = axs[0]
+    ax1 = axs[1]
+    size = 50
+    ax0.scatter(df['total_demand'], df['baseline'], s=size, label='Baseline')
+    ax0.scatter(df['total_demand'], df['scenario1'], s=size, label='Scenario 1')
+    ax0.scatter(df['total_demand_s2'], df['scenario2'], s=size, label='Scenario 2')
+    ax0.scatter(df['total_demand_s3'], df['scenario3'], s=size, label='Scenario 3')
+    ax0.set_xlabel("Total demand [kWh]")
+    ax0.set_ylabel("Coverage by PV [\%]")
+
+
+    ax1.scatter(df['max_kW'], df['baseline'], s=size)
+    ax1.scatter(df['max_kW'], df['scenario1'], s=size)
+    ax1.scatter(df['max_kW'], df['scenario2'], s=size)
+    ax1.scatter(df['max_kW'], df['scenario3'], s=size)
+    ax1.set_xlabel("Peak power [kW]")
+    ax1.set_xlim(0, 30)
+    # ax1.ylabel("coverage by PV [\%]")
+
+    leg = ax0.legend(loc='upper left', frameon=False, bbox_to_anchor=(-0.35, -0.15),
+                    ncol=4, markerscale=3)
+
+    bbox_extra_artists = [fig, leg]
+    fig_out = os.path.join('plots', 'sensitivity_kwp_bevdemand', 'sensitivity_kwp_bevdemand.png')
+    save_figure(fig_out, bbox_extra_artists=bbox_extra_artists, dpi=10)
+
     # plt.figure()
     # plt.scatter(df['area'], df['baseline'])
     # plt.scatter(df['area'], df['scenario1'])

@@ -29,10 +29,10 @@ def plot_cumsum_plot(baseline, scenario1, scenario2, scenario3):
                         journal=journal)
 
 
-    lbase = plot_cumsum_by_scenario(baseline[baseline.is_home], ax, label='baseline')
-    l1 = plot_cumsum_by_scenario(scenario1[scenario1.is_home], ax, label='scenario1')
-    l2 = plot_cumsum_by_scenario(scenario2, ax, label='scenario2')
-    l3 = plot_cumsum_by_scenario(scenario3, ax, label='scenario3')
+    lbase = plot_cumsum_by_scenario(baseline[baseline.is_home], ax, label='Baseline')
+    l1 = plot_cumsum_by_scenario(scenario1[scenario1.is_home], ax, label='Scenario 1')
+    l2 = plot_cumsum_by_scenario(scenario2, ax, label='Scenario 2')
+    l3 = plot_cumsum_by_scenario(scenario3, ax, label='Scenario 3')
 
     xlim = plt.xlim()
     lxy = plt.plot(np.arange(0, xlim[1]), np.arange(0, xlim[1]), label='x=y (only using pv generation)', color='k',

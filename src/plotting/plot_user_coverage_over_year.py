@@ -16,6 +16,7 @@ from src.methods.helpers import get_user_id
 import statsmodels.api as sm
 import scipy 
 import logging 
+from src.constants import project_constants
 
 def parse_dates(data_raw):
     data = data_raw.copy()
@@ -43,8 +44,8 @@ def get_aggr_df(df):
     df = df.reset_index().sort_values('start')
     df['coverage'] = df['charged_from_pv']/df['needed_by_car'] * 100
     
-    too_old = datetime.datetime.strptime('2018-01-01 00:00:00', '%Y-%m-%d %M:%H:%S')
-    df = df[df['start'] < too_old]
+    end_of_project = project_constants['t_end']
+    df = df[df['start'] < end_of_project]
     
     return df
 

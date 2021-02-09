@@ -122,7 +122,7 @@ fig, ax = init_figure(nrows=1,
 
 plt.sca(ax)
 # sns.heatmap(matrix, ax=ax)
-im = ax.imshow(matrix, aspect='auto', cmap='viridis')
+im = ax.imshow(matrix, aspect='auto', cmap='viridis', interpolation='None')
 # PCM=ax.get_children()[-2] #get the mappable, the 1st and the 2nd are the x and y axes
 # plt.colorbar(PCM, ax=ax)
 
@@ -137,7 +137,7 @@ plt.yticks([0, 6, 12, 18, 24])
 im.set_clim([0, 1])
 # cb = fig.colorbar(im, orientation="horizontal", pad=0.5, shrink=0.5)
 divider = make_axes_locatable(ax)
-cax = divider.new_vertical(size="5%", pad=1.5, pack_start=True)
+cax = divider.new_vertical(size="5%", pad=1.0, pack_start=True)
 fig.add_axes(cax)
 cb = fig.colorbar(im, cax=cax, orientation="horizontal", fraction=0.5)
 cb.outline.set_visible(False)

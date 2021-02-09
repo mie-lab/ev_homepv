@@ -22,7 +22,7 @@ from src.methods.pv_swissbuildings_json import PVModel
 from src.methods.loading_and_preprocessing import load_and_prepare_scenario_raw_data
 from src.calculate_scenarios import get_cached_csv
 from src.methods.PV_interface import get_PV_generated_from_pandas_row
-
+from src.constants import project_constants
 
 def get_kwp(df):
     all_vins = df.index.tolist()
@@ -91,11 +91,13 @@ if __name__ == "__main__":
     plt.sca(axes[0])
     ax = axes[0]
     sns.lineplot(data=daily_pv_per_user, x="start", y="generated_by_pv",
-                 linewidth=1.5, ax=ax, estimator=np.median)
+                 linewidth=1.5, ax=ax)
     ax.set_xlabel('Days in 2017 [d]')
     ax.set_ylabel('Daily PV generation [kWh]')
-    x_dates = pd.date_range(start=datetime.datetime(2017, 1, 1, 0, 0),
-                            end=datetime.datetime(2017, 12, 31, 0, 0),
+    t_start = project_constants['t_start']
+    t_end = project_constants['t_end']
+    x_dates = pd.date_range(start=t_start,
+                            end=t_end,
                             freq='M',) + datetime.timedelta(days=1)
     axes[0].set_xticks(x_dates[::2])
     axes[0].xaxis.set_major_formatter(mdates.DateFormatter('%b'))
@@ -116,7 +118,7 @@ if __name__ == "__main__":
     axes[1].set_xticks([0, 10, 20, 30], minor=False)
     plt.xlim((0, 35))
 
-    save_figure(fig_out, dpi=10)
+    save_figure(fig_out)
 
 
 

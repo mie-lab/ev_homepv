@@ -75,7 +75,8 @@ charging_state_timeseries.set_index('timestamp', inplace=True)
 f, ax = init_figure(nrows=1,
                     ncols=1,
                     columnes=Columnes.ONE,
-                    journal=Journal.POWERPOINT_A3)
+                    journal=Journal.POWERPOINT_A3,
+                    disabled_spines=['top'])
 
 charging_state_timeseries.plot(ax=ax,
                                color="k",
@@ -156,9 +157,23 @@ pvgen_handle = ax2.plot(datelist[:-1], pv_list, label='PV generation', linewidth
 # ax2 = ax
 
 
+
+# Put a legend below current axis
+
+lgd = ax.legend(handles=[l1, pvgen_handle[0], l2, l3],
+                 labels=["SoC", "PV generation", "Car is at home", "Car is away"],
+                 loc='upper left',
+                 #                bbox_to_anchor=(0.5, -0.4),
+                 ncol=4,
+                 frameon=False,
+                 fancybox=False,
+                 shadow=False,
+                 framealpha=1.0,
+                 bbox_to_anchor=(-0.12, -0.15))
+
 # make the plot nice
 
-ax.set_xlabel("Date", labelpad=20)
+ax.set_xlabel("")
 ax.set_ylabel(r"State of Charge (SoC) [\%]")
 ax2.set_ylabel(r"PV Generation [kWh]")
 
@@ -197,20 +212,12 @@ ax2.set_ylim((0, 10.1))
 
 # Shrink current axis's height by 10% on the bottom
 # plt.subplots_adjust(bottom=0.25)
-# Put a legend below current axis
 
-lgd = ax2.legend(handles=[l1, pvgen_handle[0], l2, l3],
-                 labels=["SoC", "PV generation", "Car is at home", "Car is away"],
-                 loc='lower right',
-                 #                bbox_to_anchor=(0.5, -0.4),
-                 ncol=4,
-                 fontsize=14,
-                 frameon=True,
-                 fancybox=False,
-                 shadow=False,
-                 framealpha=1.0, )
+
 
 frame = lgd.get_frame()
 frame.set_facecolor('#ebefe8')
 
-save_figure(figure_out, bbox_extra_artists=[lgd])
+ax.spines['top'].set_visible(False)
+
+save_figure(figure_out, bbox_extra_artists=[lgd], dpi=5)
