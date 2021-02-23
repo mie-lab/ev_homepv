@@ -1,42 +1,14 @@
-# plt.legend()
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-import os
 import datetime
-import matplotlib.dates as mdates
-import matplotlib.patches as mpatches
-from src.methods.helpers import soc2remainingCharge
-from src.methods.PV_interface import get_PV_generated
-import pandas as pd
-import seaborn as sns
-from src.plotting.myplotlib import init_figure, Columnes, Journal, save_figure
-import numpy as np
-import logging
-import os
-from functools import partial
-from multiprocessing import Pool
-import pandas as pd
-
-import datetime
-import logging
 import os
 
-import numpy as np
 import pandas as pd
-import psycopg2
-from psycopg2 import sql
-from pyproj import Transformer
 from sqlalchemy import create_engine
-import warnings
+
 # import database login information
 from src.db_login import DSN
-from src.table_information import home_table_info, ecar_table_info, ecarid_athome_table_info
-
-from src.methods.PV_interface import get_PV_generated_from_pandas_row
 from src.methods.loading_and_preprocessing import load_and_prepare_baseline_data, load_and_prepare_scenario_raw_data, \
-    compute_additional_columns, get_id_matching_dict, get_inverse_id_matching_dict
-from src.methods.scenarios_for_users import create_scenario_table
+    get_id_matching_dict, get_inverse_id_matching_dict
+from src.table_information import ecar_table_info
 
 def check_user_plausibilty(baseline_data, data):
     vins_baseline = baseline_data['vin'].unique()
@@ -101,20 +73,18 @@ print(10 * '%')
 print('Number of users indicators')
 print('\t final number of users: {}'.format(nb_of_users_final))
 
-
 ######################charging in baseline ###############################################################
-total_energy_consumed_mwh = baseline['needed_by_car'].sum()/1000
-total_energy_charged_mwh = baseline['charged_from_pv'].sum()/1000 + baseline['charged_from_outside'].sum()/1000
-total_energy_charged_home_mwh = baseline.loc[baseline.is_home, 'charged_from_pv'].sum()/1000\
-                                + baseline.loc[baseline.is_home, 'charged_from_outside'].sum()/1000
+total_energy_consumed_mwh = baseline['needed_by_car'].sum() / 1000
+total_energy_charged_mwh = baseline['charged_from_pv'].sum() / 1000 + baseline['charged_from_outside'].sum() / 1000
+total_energy_charged_home_mwh = baseline.loc[baseline.is_home, 'charged_from_pv'].sum() / 1000 \
+                                + baseline.loc[baseline.is_home, 'charged_from_outside'].sum() / 1000
 
 print(10 * '%')
 print('charging')
 print('\t total energy charged:  {} MWh'.format(total_energy_charged_mwh))
 print('\t total energy charged at home:  {} MWh'.format(total_energy_charged_home_mwh))
-print('\t percentage charged at home:  {} %'.format(total_energy_charged_home_mwh/total_energy_charged_mwh))
+print('\t percentage charged at home:  {} %'.format(total_energy_charged_home_mwh / total_energy_charged_mwh))
 print('\t total energy consumed: {} MWh'.format(total_energy_consumed_mwh))
-
 
 ##########################BEV data descriptors ################################################
 
@@ -141,8 +111,6 @@ ecar_data = ecar_data[ecar_data['timestamp_end_utc'] <= max_date]
 
 # filter by vins:
 ecar_data = ecar_data[ecar_data.index.isin(users_final)]
-
-
 nb_of_entries = ecar_data.shape[0]
 nb_of_segments = scenario1.shape[0]
 nb_of_drives = ecar_data[ecar_data['zustand'] == 'fahrt'].shape[0]
@@ -151,7 +119,8 @@ nb_of_km_offset = ecar_data.groupby(level=0)['km_stand_end'].min()
 nb_of_km = ecar_data.groupby(level=0)['km_stand_end'].max() - nb_of_km_offset
 nb_of_km_sum = nb_of_km.sum()
 nb_of_km_avg = nb_of_km.mean()
-consumed_energy_total = ecar_data.loc[ecar_data['consumed_electric_energy_total'] < 100,  'consumed_electric_energy_total'].sum()/1000
+consumed_energy_total = ecar_data.loc[ecar_data[
+                                          'consumed_electric_energy_total'] < 100, 'consumed_electric_energy_total'].sum() / 1000
 print(10 * '%')
 print('BEV usage indicators')
 print('\t Number of entries: {}'.format(nb_of_entries))
@@ -164,18 +133,16 @@ print('\t consumed energy total recorded by car {} MWh(not used)'.format(consume
 
 # calc ueberschlagener verbrauch
 # verbrauch je 100km ca 15.3 kwh https://www.adac.de/rund-ums-fahrzeug/autokatalog/marken-modelle/bmw/bmw-i3/
-consumption_theoretical = nb_of_km_sum/100 * 15.3 / 1000 # in Mwh
+consumption_theoretical = nb_of_km_sum / 100 * 15.3 / 1000  # in Mwh
 print('\t consumed energy total theretic estimation {} MWh(not used)'.format(consumption_theoretical))
 
 ### final homes of users.
 filepath = os.path.join(path_to_data_folder,
-                            "manual_validation.csv")
+                        "manual_validation.csv")
 validation = pd.read_csv(filepath, sep=';', encoding='latin-1')
 
-
-
 inverse_matching_dict = get_inverse_id_matching_dict(os.path.join(path_to_data_folder,
-                                                  "vin_id_matching.csv"))
+                                                                  "vin_id_matching.csv"))
 matching_dict = get_id_matching_dict(os.path.join(path_to_data_folder,
                                                   "vin_id_matching.csv"))
 users_final_ids = pd.Series(users_final).map(inverse_matching_dict)
@@ -187,6 +154,5 @@ print("MFH: {}".format(validation[validation['MFH'] == 1].shape[0]))
 # only keep ids of users that live in a single home (validation['EFH'] == 1)
 # and were we were able to correctly recognize the roof area (validation['Brauchbar'] == 1)
 good_userids_ix = (((validation['Brauchbar'] == 1) & (validation['EFH'] == 1)) |
-                  ((validation['Brauchbar'] == 1) & (~validation['reduction_factor'].isna() )))
+                   ((validation['Brauchbar'] == 1) & (~validation['reduction_factor'].isna())))
 good_userids = validation.loc[good_userids_ix, 'ID']
-
