@@ -12,11 +12,11 @@ import matplotlib.dates as mdates
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import pandas as pd
-from src.db_login import DSN
-from src.plotting.myplotlib import init_figure, Columnes, Journal, save_figure
 from sqlalchemy import create_engine
-from src.methods.PV_interface import get_PV_generated
 
+from src.db_login import DSN
+from src.methods.PV_interface import get_PV_generated
+from src.plotting.myplotlib import init_figure, Columnes, Journal, save_figure
 
 file_out = os.path.join(".", "data", "bmw_soc_overtime_data.csv")
 figure_out = os.path.join(".", "plots", "soc_over_time_rawdata", "bmw_soc_overtime.png")
@@ -157,19 +157,18 @@ pvgen_handle = ax2.plot(datelist[:-1], pv_list, label='PV generation', linewidth
 # ax2 = ax
 
 
-
 # Put a legend below current axis
 
 lgd = ax.legend(handles=[l1, pvgen_handle[0], l2, l3],
-                 labels=["SoC", "PV generation", "Car is at home", "Car is away"],
-                 loc='upper left',
-                 #                bbox_to_anchor=(0.5, -0.4),
-                 ncol=4,
-                 frameon=False,
-                 fancybox=False,
-                 shadow=False,
-                 framealpha=1.0,
-                 bbox_to_anchor=(-0.12, -0.15))
+                labels=["SoC", "PV generation", "Car is at home", "Car is away"],
+                loc='upper left',
+                #                bbox_to_anchor=(0.5, -0.4),
+                ncol=4,
+                frameon=False,
+                fancybox=False,
+                shadow=False,
+                framealpha=1.0,
+                bbox_to_anchor=(-0.12, -0.15))
 
 # make the plot nice
 
@@ -184,9 +183,7 @@ ax.xaxis.set_major_formatter(mdates.DateFormatter('%a'))
 
 plt.sca(ax)
 # x axis date formating
-# ax.xaxis.set_minor_locator(mdates.HourLocator(interval=12))
 ax.xaxis.set_minor_locator(mdates.HourLocator(byhour=[0, 12]))
-# ax.xaxis.set_minor_locator(mdates.HourLocator(byhour=[12,]))
 ax.xaxis.set_minor_formatter(mdates.DateFormatter('%H:%M'))
 
 ax.tick_params(axis='x', which='minor', pad=10)
@@ -205,16 +202,6 @@ ax.yaxis.grid(True)
 
 ax.set_ylim((0, 101))
 ax2.set_ylim((0, 10.1))
-# ax.set_ylim((0, max(charging_state_timeseries['soc']) + 1))
-
-
-# ax.set_title("SoC over time, real data, WoW")
-
-# Shrink current axis's height by 10% on the bottom
-# plt.subplots_adjust(bottom=0.25)
-
-
-
 frame = lgd.get_frame()
 frame.set_facecolor('#ebefe8')
 

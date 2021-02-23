@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug 28 2018
-
-@author: martinhe
-"""
-
 import os
 
 import matplotlib
@@ -97,8 +90,6 @@ ln_lin, = ax.plot(x, y_lin,
                   linestyle=':',
                   color='orange',
                   linewidth=3,
-                  #              label="${} * \Delta_{{SoC}}$,  $R^2 = {}$".format(
-                  #                      round(params_lin['dsoc'], 3), round(r2_lin, 2))
                   label='linear fit',
                   zorder=10  # draw this line on top
                   )
@@ -114,18 +105,3 @@ ax.text(0.99, 0.01, r"N = \num{{ {} }}".format(df.shape[0]), \
         transform=ax.transAxes)
 
 save_figure(os.path.join(".", "plots", "power_factor", "power_factor.png"))
-
-# #calculate power factor
-# lr = LinearRegression(fit_intercept=True)
-# 
-# lr.fit(df['dsoc'].values.reshape(-1,1), df['pow'].values)
-# lr.coef_
-# lr.intercept_
-# 
-# y_pred = lr.predict(df['dsoc'].values.reshape(-1,1))
-# 
-# plt.plot(df['dsoc'].values.reshape(-1,1),y_pred, linestyle=':', color = 'lightcoral', label='Linear trend', linewidth=3)
-# plt.legend()
-# 
-# fig.savefig(figure_path + '\\power_factor.pdf')
-# plt.close(fig)

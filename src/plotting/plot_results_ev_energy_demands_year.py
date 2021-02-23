@@ -1,23 +1,21 @@
 import datetime
-import math
 import os
 import sys
+
 sys.path.append('.')
 
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
 import matplotlib.dates as mdates
 import seaborn as sns
-from src.methods.helpers import get_user_id, deltasoc2tocharge, soc2remainingCharge
+from src.methods.helpers import deltasoc2tocharge
 from src.plotting.myplotlib import init_figure, Columnes, Journal, save_figure
-import warnings
 import numpy as np
-from src.methods.loading_and_preprocessing import load_and_prepare_baseline_data, compute_additional_columns
-from src.calculate_scenarios import get_cached_csv
+from src.methods.loading_and_preprocessing import load_and_prepare_baseline_data
 from src.constants import project_constants
-def soc_to_kwh(soc_diff):
 
+
+def soc_to_kwh(soc_diff):
     return deltasoc2tocharge(-soc_diff)
 
 
@@ -39,57 +37,11 @@ if __name__ == "__main__":
     consumption_car = list(map(deltasoc2tocharge, delta_soc))
     data_baseline['energy_required_kwh'] = consumption_car
 
-
     data_baseline['day'] = data_baseline['start'].dt.floor('d')
     daily_user_consumption = data_baseline.groupby(by=['vin', 'day'])['energy_required_kwh'].sum()
     daily_user_consumption = daily_user_consumption.reset_index()
     daily_user_consumption['dow'] = daily_user_consumption['day'].dt.weekday
     data_to_plot = daily_user_consumption.copy()
-    #raw_bmw_file = os.path.join(data_folder, 'bmw_soc_overtime_data.csv')
-
-    #raw_bmw_data = pd.read_csv(raw_bmw_file, parse_dates=['timestamp_start_local', 
-    #    'timestamp_end_local', 'timestamp_start_utc', 'timestamp_end_utc'])
-
-    # all_vehicles = set(data['vin'].unique())
-    #
-    # data_to_plot = []
-    # for vehicle in all_vehicles:
-    #     veh_en_cons = []
-    #     raw_bmw_data_vehicle = data[data['vin'] == vehicle].copy()
-    #     raw_bmw_data_vehicle = raw_bmw_data_vehicle.sort_values(['start'])
-    #
-    #     # Go through everything in pairs, compute the difference between pairs.
-    #     for (idx_1, row_1), (idx_2, row_2) in zip(raw_bmw_data_vehicle[:-1].iterrows(),
-    #                                               raw_bmw_data_vehicle[1:].iterrows()):
-    #         t_diff = row_2['start'] - row_1['start']
-    #         soc_diff = row_2['total_segment_consumption']
-    #         if soc_diff >= 0:
-    #             energy_required_kwh = 0
-    #         else:
-    #             # In case the difference is negative, energy was consumed. Convert the change in SoC to kWh.
-    #             energy_required_kwh = soc_to_kwh(soc_diff)
-    #
-    #         veh_en_cons.append({
-    #             'start': row_1['start'] + (row_2['start'] - row_1['start']) / 2,
-    #             'energy_required_kwh': energy_required_kwh
-    #         })
-    #
-    #     veh_en_cons = pd.DataFrame(veh_en_cons, columns=['start', 'energy_required_kwh'])
-    #
-    #     # For each day, compute the average production per band, and multiply by 24 * 2.
-    #     for day in range(365 - 31):  # Only from February to December.
-    #         start_day = datetime.datetime(2017, 2, 1, 0, 0) + datetime.timedelta(days=day)
-    #         end_day = datetime.datetime(2017, 2, 1, 0, 0) + datetime.timedelta(days=day + 1)
-    #         tot_cons = veh_en_cons[(start_day <= veh_en_cons['start']) & (veh_en_cons['start'] < end_day)]
-    #         tot_cons = tot_cons['energy_required_kwh'].sum()
-    #         data_to_plot.append({
-    #             'vid': vehicle,
-    #             'day': start_day,
-    #             'energy_required_kwh': tot_cons,
-    #             'dow': start_day.weekday()
-    #         })
-
-
 
     data_to_plot = pd.DataFrame(data_to_plot, columns=['day', 'energy_required_kwh', 'dow'])
 
@@ -106,7 +58,7 @@ if __name__ == "__main__":
 
     plt.sca(axes[0])
     sns.lineplot(data=data_to_plot, x="day", y="energy_required_kwh",
-                 linewidth=2, ax=axes[0], ci=95, err_kws={'alpha':0.4})
+                 linewidth=2, ax=axes[0], ci=95, err_kws={'alpha': 0.4})
     axes[0].set_xlabel('Days in 2017 [d]')
     axes[0].set_ylabel('Energy Demand of EV per day [kWh]')
     axes[0].set_ylim([-2, 30])
@@ -115,14 +67,14 @@ if __name__ == "__main__":
     t_end = project_constants['t_end']
     x_dates = pd.date_range(start=datetime.datetime(2017, 1, 1, 0, 0),
                             end=datetime.datetime(2017, 12, 31, 0, 0),
-                            freq='M',) + datetime.timedelta(days=1)
+                            freq='M', ) + datetime.timedelta(days=1)
 
     axes[0].set_xticks(x_dates[::2])
     axes[0].xaxis.set_major_formatter(mdates.DateFormatter('%b'))
 
     plt.sca(axes[1])
     sns.boxplot(x="dow", y="energy_required_kwh", data=data_to_plot, ax=axes[1],
-                flierprops={'alpha':.1, 'marker':'+'},
+                flierprops={'alpha': .1, 'marker': '+'},
                 color='b'
                 )
     axes[1].set_xlabel('Weekdays')

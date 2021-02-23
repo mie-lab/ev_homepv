@@ -1,24 +1,11 @@
 # plt.legend()
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-import os
-import datetime
-import matplotlib.dates as mdates
-import matplotlib.patches as mpatches
-from src.methods.helpers import soc2remainingCharge
-from src.methods.PV_interface import get_PV_generated, get_area_factor_for_user
-import pandas as pd
-import seaborn as sns
-from src.plotting.myplotlib import init_figure, Columnes, Journal, save_figure
-from src.methods.pv_swissbuildings_json import PVModel
-import numpy as np
-from src.methods.helpers import get_user_id
-import statsmodels.api as sm
-import scipy
 import logging
-import warnings
+import os
+
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+from src.plotting.myplotlib import init_figure, Columnes, Journal, save_figure
+
 """
 Calendar heatmaps from Pandas time series data.
 Plot Pandas time series data sampled by day in a heatmap per calendar year,
@@ -26,10 +13,6 @@ similar to GitHub's contributions calendar.
 Based on Martijn Vermaat's calmap:  https://github.com/martijnvermaat/calmap
 """
 
-import calendar
-import datetime
-
-from matplotlib.colors import ColorConverter, ListedColormap
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -49,8 +32,8 @@ logging.basicConfig(
     level=logging.DEBUG,
     datefmt='%Y-%m-%d %H:%M:%S')
 
-def prepare_df(s1):
 
+def prepare_df(s1):
     s1['end'] = s1['end'] - pd.Timedelta(seconds=1)
     assert np.all(s1['start'] < s1['end'])
 
@@ -68,6 +51,7 @@ def prepare_df(s1):
 
     return s11
 
+
 output_folder = os.path.join('.', 'data', 'output', 'PVMODEL_SPV170')
 fig_out = os.path.join('plots', 'bev_at_home_over_year', 'bev_at_home_over_year.png')
 
@@ -76,7 +60,6 @@ fig_out = os.path.join('plots', 'bev_at_home_over_year', 'bev_at_home_over_year.
 
 s1 = pd.read_csv(os.path.join(output_folder, 'results_scenario1.csv'))
 s1 = parse_dates(s1)
-
 
 s11 = prepare_df(s1)
 all_users = s11.vin.unique()
@@ -95,7 +78,7 @@ for user_this in all_users:
     user_df_resampled = df.combine_first(dummy_frame).interpolate('time')
 
     # aggregate to 1 hour. Every hour has now the fraction of the time that 1 user was at home
-    user_df_resampled = user_df_resampled.resample('1H').sum()/60
+    user_df_resampled = user_df_resampled.resample('1H').sum() / 60
     user_df_resampled_list.append(user_df_resampled)
 
     # at_home_time_list.append(user_df_resampled.max())
@@ -111,14 +94,14 @@ matrix = matrix.transpose()
 # plot
 journal = Journal.POWERPOINT_A3
 fig, ax = init_figure(nrows=1,
-                       ncols=1,
-                       fig_height_mm=150,
-                        # height_scale=5.0,
-                       columnes=Columnes.ONE,
-                       journal=journal,
+                      ncols=1,
+                      fig_height_mm=150,
+                      # height_scale=5.0,
+                      columnes=Columnes.ONE,
+                      journal=journal,
                       disabled_spines=[],
                       # gridspec_kw={"height_ratios":[1, 0.05]})
-                             )
+                      )
 
 plt.sca(ax)
 # sns.heatmap(matrix, ax=ax)

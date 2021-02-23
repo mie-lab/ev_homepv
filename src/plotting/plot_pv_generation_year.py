@@ -1,28 +1,24 @@
 import datetime
-import gzip
-import json
 import os
 import sys
-import warnings
 
 sys.path.append('.')
 import matplotlib.dates as mdates
-import seaborn as sns
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from functools import partial
 from multiprocessing import Pool
-from src.methods.PV_interface import get_PV_generated, get_area_factor_for_user
+from src.methods.PV_interface import get_area_factor_for_user
 from src.methods.helpers import get_user_id
 from src.plotting.myplotlib import init_figure, Columnes, Journal, save_figure
 import warnings
 from src.methods.pv_swissbuildings_json import PVModel
 from src.methods.loading_and_preprocessing import load_and_prepare_scenario_raw_data
-from src.calculate_scenarios import get_cached_csv
 from src.methods.PV_interface import get_PV_generated_from_pandas_row
 from src.constants import project_constants
+
 
 def get_kwp(df):
     all_vins = df.index.tolist()
@@ -43,6 +39,7 @@ def get_kwp(df):
         df.loc[vin, 'max_gen_kw'] = max(list(pvdict.values())) * 2 / 1000 * area_factor
 
     return df
+
 
 if __name__ == "__main__":
     output_folder = os.path.join('.', 'data', 'output', 'PVMODEL_SPV170')
@@ -69,10 +66,10 @@ if __name__ == "__main__":
 
     # data['generated_by_pv'] = list(map(get_PV_generated_from_pandas_row_partial, data.iterrows())) # single core for debugging
     with Pool(24) as pool:
-        daily_pv_per_user['generated_by_pv'] = pool.map(get_PV_generated_from_pandas_row_partial, daily_pv_per_user.iterrows())
+        daily_pv_per_user['generated_by_pv'] = pool.map(get_PV_generated_from_pandas_row_partial,
+                                                        daily_pv_per_user.iterrows())
         pool.close()
         pool.join()
-
 
     ############### get kwp
 
@@ -80,8 +77,6 @@ if __name__ == "__main__":
     df_kwp['area'] = 0
     df_kwp['user'] = 0
     df_kwp = get_kwp(df_kwp)
-
-
 
     journal = Journal.POWERPOINT_A3
     fig, axes = init_figure(nrows=1, ncols=2,
@@ -98,18 +93,10 @@ if __name__ == "__main__":
     t_end = project_constants['t_end']
     x_dates = pd.date_range(start=t_start,
                             end=t_end,
-                            freq='M',) + datetime.timedelta(days=1)
+                            freq='M', ) + datetime.timedelta(days=1)
     axes[0].set_xticks(x_dates[::2])
     axes[0].xaxis.set_major_formatter(mdates.DateFormatter('%b'))
 
-
-
-    #############################
-    # yearly_pv_per_user = daily_pv_per_user.groupby(by='vin')['generated_by_pv'].sum()
-    # # axes[1].hist(yearly_pv_per_user)
-    # sns.histplot(data=yearly_pv_per_user.values, ax=axes[1])
-    # axes[1].set_xlabel('Total PV generation in study period per house')
-    # axes[1].set_ylabel('Count')
     plt.sca(axes[1])
     sns.histplot(data=df_kwp, x='max_kW', ax=axes[1], bins=np.arange(0, 40, 5))
 
@@ -119,6 +106,3 @@ if __name__ == "__main__":
     plt.xlim((0, 35))
 
     save_figure(fig_out)
-
-
-

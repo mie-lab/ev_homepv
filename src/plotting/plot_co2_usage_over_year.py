@@ -5,43 +5,37 @@ Created on Tue Nov 24 20:38:18 2020
 @author: henry
 """
 
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-import os
 import datetime
+import os
+
 import matplotlib.dates as mdates
-import matplotlib.patches as mpatches
-from src.methods.helpers import soc2remainingCharge
-from src.methods.PV_interface import get_PV_generated
 import pandas as pd
 import seaborn as sns
-from src.plotting.myplotlib import init_figure, Columnes, Journal, save_figure
-from src.methods.pv_swissbuildings_json import PVModel
-import numpy as np
-from src.methods.helpers import get_user_id
-import statsmodels.api as sm
-import scipy 
-import logging
+
 from src.constants import project_constants
+from src.plotting.myplotlib import init_figure, Columnes, Journal, save_figure
+
 
 def parse_dates(data_raw):
     data = data_raw.copy()
     data['start'] = pd.to_datetime(data['start'])
     data['end'] = pd.to_datetime(data['end'])
-    
+
     return data
+
 
 def reshape_for_quantile_plot(df):
     df = df.pivot(index='vin', values='coverage', columns='start')
-    return df.columns, df.values #(x, y)
+    return df.columns, df.values  # (x, y)
+
 
 import numpy as np
 import matplotlib.pyplot as plt
-plt.style.use('ggplot') # this was just used for the examples
+
+plt.style.use('ggplot')  # this was just used for the examples
 
 # data
-CO2_pv = 53.6/1000 # kg/kWh
+CO2_pv = 53.6 / 1000  # kg/kWh
 # for switzerland: Verbraucher-Strommix: 
 # https://www.bafu.admin.ch/bafu/de/home/themen/klima/klimawandel--fragen-und-antworten.html#-1202736887
 # CO2_swissmix = 181.1/1000  # kg/kWh https://www.bafu.admin.ch/bafu/de/home/themen/klima/klimawandel--fragen-und-antworten.html#-1202736887
@@ -54,36 +48,33 @@ CO2_pv = 53.6/1000 # kg/kWh
 # Prospective LCA of the production and EoL recycling of a novel type of Li-ion battery for electric vehicles
 bat_co2_kwh = 76.1
 bat_cap_kwh = 13.5
-bat_lifetime_weeks = 5000/365 * 52
+bat_lifetime_weeks = 5000 / 365 * 52
 gCO2_storage_week = bat_cap_kwh * bat_co2_kwh / bat_lifetime_weeks
 
 
-
 def get_aggr_df(df):
-    
     df = df.groupby(['vin', pd.Grouper(key='start',
-                                freq='W-MON')])
-    
+                                       freq='W-MON')])
+
     df = df[['needed_by_car', 'charged_from_pv', 'charged_from_outside']].sum()
     df = df.reset_index().sort_values('start')
-    
+
     df.fillna(0, inplace=True)
-    
+
     df['co2'] = df['charged_from_pv'] * CO2_pv + \
-        df['charged_from_outside'] * CO2_swissmix
-    
+                df['charged_from_outside'] * CO2_swissmix
+
     end_of_project = project_constants['t_end']
     df = df[df['start'] < end_of_project]
-    
-    return df
 
+    return df
 
 
 if __name__ == '__main__':
     output_folder = os.path.join('.', 'data', 'output', 'PVMODEL_SPV170')
 
     plot_names = ['switzerland', 'germany']
-    for ix, CO2_swissmix in enumerate([181.1/1000, 401/1000]):
+    for ix, CO2_swissmix in enumerate([181.1 / 1000, 401 / 1000]):
         plot_name = plot_names[ix]
         fig_out = os.path.join('plots', 'co2_plot', 'plot_average_co2_over_year_' + plot_name + '.png')
 
@@ -120,9 +111,9 @@ if __name__ == '__main__':
         journal = Journal.POWERPOINT_A3
 
         fig, ax = init_figure(nrows=1,
-                                ncols=1,
-                                columnes=Columnes.ONE,
-                                journal=journal, sharex=True, sharey=True)
+                              ncols=1,
+                              columnes=Columnes.ONE,
+                              journal=journal, sharex=True, sharey=True)
 
         sns.lineplot(data=df_all, x="start", y="co2", hue="scenario",
                      linewidth=3, ax=ax)
@@ -130,9 +121,6 @@ if __name__ == '__main__':
         # ax.set_xticks(ax.get_xticks()[::2]) # skip every second tick
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
         # ax.xaxis.set_minor_formatter(mdates.DateFormatter('%b'))
-
-
-
 
         handles, labels = ax.get_legend_handles_labels()
 
@@ -144,14 +132,12 @@ if __name__ == '__main__':
                         loc='upper left', frameon=False, bbox_to_anchor=(-0.14, -0.15),
                         ncol=4)
 
-
         plt.xlabel("Time of tracking aggregated by week", labelpad=15)
         plt.ylabel(r"Emissions per Person in $\frac{\text{kg CO2 equivalent}}{\text{week}}$", labelpad=20)
 
-        bbox_extra_artists = [fig,  leg]
+        bbox_extra_artists = [fig, leg]
         save_figure(fig_out, bbox_extra_artists=bbox_extra_artists)
         plt.close(fig)
-
 
         # calculate average Co2 savings per user
         df_avco2 = df_all.groupby('scenario')['co2'].mean()
@@ -160,12 +146,11 @@ if __name__ == '__main__':
         print(plot_name)
         print("Average savings per scenario relative to the baseline:")
         print(df_avco2)
-        print(10*"%")
-    
+        print(10 * "%")
 
     # data_list = [df_b, df_s1, df_s2, df_s3]
     # journal = Journal.POWERPOINT_A3
-    
+
     # fig, axs = init_figure(nrows=2,
     #                         ncols=2,
     #                         columnes=Columnes.ONE,
@@ -178,12 +163,12 @@ if __name__ == '__main__':
     #     t, y = reshape_for_quantile_plot(data)
     #     ax = tsplot(t, y, n=1, percentile_min=5, percentile_max=95, plot_median=True, ax=ax, plot_scatter=True, color='g', line_color='navy', alpha=0.3)
     #     ax = tsplot(t, y, n=1, percentile_min=25, percentile_max=75, ax=ax,  plot_median=False,  color='g', line_color='navy', alpha=0.5)
-        
+
     #     ax.set_xticks(ax.get_xticks()[::2]) # skip every second tick
     #     ax.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
     #     # ax.xaxis.set_minor_formatter(mdates.DateFormatter('%b'))
     #     ax.set_title(title_list[ix])
-    
+
     # # labels 
     # # https://stackoverflow.com/questions/16150819/common-xlabel-ylabel-for-matplotlib-subplots
     # fig.add_subplot(111, frameon=False)
@@ -196,7 +181,6 @@ if __name__ == '__main__':
     # # legend    
     # handles, labels = ax.get_legend_handles_labels()
 
-    
     # leg = plt.figlegend(handles=handles, labels=labels, loc='upper left',
     #                     ncol=2, frameon=False,
     #                     bbox_to_anchor=(0.15, 0), labelspacing=0.1,
@@ -204,13 +188,9 @@ if __name__ == '__main__':
     # leg.legendHandles[1].set_alpha(1) # no alpha for scatter circle
     # # leg.legendHandles[1]._sizes = [500]
     # leg.legendHandles[1].set_sizes([200])
-        
+
     # bbox_extra_artists = [fig,  leg]
-    
+
     # # save
     # save_figure(os.path.join('plots', 'quantile_plots', 'plot_quantile_coverage_year.png'), bbox_extra_artists=bbox_extra_artists,  dpi=100)
-    # plt.close(fig)    
-
-
-
-
+    # plt.close(fig)

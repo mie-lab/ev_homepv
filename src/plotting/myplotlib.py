@@ -32,6 +32,7 @@ from pint.registry import UnitRegistry
 
 ureg = UnitRegistry()
 
+
 class Journal(Enum):
     SPRINGER = "SPRINGER"
     ELSEVIER = "ELSEVIER"
@@ -135,14 +136,14 @@ def set_rcparams(journal):
         'grid.linewidth': 0.8,
         'text.usetex': True,
         # https://stackoverflow.com/questions/63887179/python-new-fontmanager
-        'text.latex.preamble': " ". join([r'\usepackage{siunitx}'
-                                r'\usepackage{helvet}',
-                                r'\usepackage[EULERGREEK]{sansmath}',
-                                r'\sansmath',
-                                r'\sisetup{detect-all}',
-                                # https://tex.stackexchange.com/questions/207060/siunitx-celsius-font
-                                r'\sisetup{math-celsius = {}^{\circ}\kern-\scriptspace C}',
-                                r'\AtBeginDocument{\DeclareSIUnit{\watthour}{Wh}}']),
+        'text.latex.preamble': " ".join([r'\usepackage{siunitx}'
+                                         r'\usepackage{helvet}',
+                                         r'\usepackage[EULERGREEK]{sansmath}',
+                                         r'\sansmath',
+                                         r'\sisetup{detect-all}',
+                                         # https://tex.stackexchange.com/questions/207060/siunitx-celsius-font
+                                         r'\sisetup{math-celsius = {}^{\circ}\kern-\scriptspace C}',
+                                         r'\AtBeginDocument{\DeclareSIUnit{\watthour}{Wh}}']),
         # 'text.latex.unicode': True, # https://stackoverflow.com/questions/53157355/what-replaces-text-latex-unicode
         'font.family': 'sans-serif',
         'font.sans-serif': journal_config[journal][FONT],
@@ -218,7 +219,6 @@ def save_figure(outpath, dpi=600, bbox_extra_artists=()):
                     outpath.replace('.png', '.pdf'),
                     outpath.replace('.png', '-crop.pdf')])
     # Crop png
-
 
     subprocess.run(["magick",
                     outpath,
